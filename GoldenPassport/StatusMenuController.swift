@@ -90,6 +90,10 @@ class StatusMenuController: NSObject {
 
     private func initStatusMenuItems() {
         statusMenu.insertItem(NSMenuItem.separator(), at: 0)
+        let openMainWindowItem = NSMenuItem(title: L("main.open_window"), action: #selector(openMainWindowClicked), keyEquivalent: "o")
+        openMainWindowItem.target = self
+        statusMenu.insertItem(openMainWindowItem, at: 0)
+
         timerMenuItem = NSMenuItem()
         statusMenu.insertItem(timerMenuItem, at: 0)
         enableAutoStart.state = NSControl.StateValue(rawValue: DataManager.shared.getHttpServerAutoStart() ? 1 : 0)
@@ -397,6 +401,12 @@ class StatusMenuController: NSObject {
             alert.addButton(withTitle: L("common.ok"))
             alert.alertStyle = NSAlert.Style.warning
             alert.runModal()
+        }
+    }
+
+    @IBAction func openMainWindowClicked(_ sender: NSMenuItem) {
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            appDelegate.mainWindowController.showWindow(nil)
         }
     }
     

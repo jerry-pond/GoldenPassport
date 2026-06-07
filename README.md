@@ -4,7 +4,7 @@
 
 GoldenPassport is a native macOS authenticator app for managing OTPAuth / Google Authenticator verification codes.
 
-This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport). This fork keeps the original menu bar workflow, adds an edit mode for existing authenticators, and updates the project to build with Xcode and Swift Package Manager.
+This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport). This fork adds a full main window for managing authenticators, keeps the original menu bar quick-copy workflow, and updates the project to build with Xcode and Swift Package Manager.
 
 ## Screenshots
 
@@ -19,6 +19,7 @@ This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzh
 ## Features
 
 - Recognize OTPAuth URLs from QR code images
+- Manage authenticators in a full macOS app window
 - Manage authentication codes from the macOS menu bar
 - Edit existing authentication entries, including name and OTPAuth URL
 - Support English and Simplified Chinese UI
@@ -44,18 +45,21 @@ The release packages are ad-hoc signed and do not use an Apple Developer ID. On 
 ## Usage
 
 1. Start `GoldenPassport.app`.
-2. Add an OTPAuth URL from the status menu, or import existing data.
-3. Click an auth menu item to copy the current verification code.
+2. Use the main window to add, edit, delete, import, export, and copy verification codes.
+3. Use the menu bar item for quick access and fast copying.
 4. Use `Shift+Cmd+[0-9]` to fill a verification code directly.
 
-### Edit Mode
+### Main Window
 
-This fork adds edit mode for existing authentication entries:
+The main window is the primary management surface:
 
-1. Click the `编辑` menu item.
-2. Choose the authentication entry you want to edit from the status menu.
-3. Update the name or OTPAuth URL, then save.
-4. Click `完成编辑` to leave edit mode.
+- Select an authenticator from the list to view its current code and OTPAuth URL.
+- Click `Add` to create a new authenticator.
+- Click `Edit` to update the selected authenticator's name or OTPAuth URL.
+- Click `Delete` to remove the selected authenticator.
+- Use `Import`, `Export`, launch-at-login, and HTTP port settings from the same window.
+
+The menu bar remains available for quick copy and hotkey workflows.
 
 ## REST API
 
@@ -90,6 +94,7 @@ xcodebuild \
 ## Changes In This Fork
 
 - Forked from [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)
+- Added a full main app window for authenticator management
 - Added edit mode for existing authentication entries
 - Added edit icon assets and menu state handling
 - Added English and Simplified Chinese app localization

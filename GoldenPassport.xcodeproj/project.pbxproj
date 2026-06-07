@@ -13,6 +13,7 @@
 		F61B6B8F1E6135B600C3E272 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = F61B6B8D1E6135B600C3E272 /* MainMenu.xib */; };
 		F61B6B9B1E613DE300C3E272 /* I18n.strings in Resources */ = {isa = PBXBuildFile; fileRef = F61B6B9D1E613DE300C3E272 /* I18n.strings */; };
 		F61B6BA01E614C7A00C3E272 /* StatusMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61B6B9F1E614C7A00C3E272 /* StatusMenuController.swift */; };
+		F61B6BA61E617EDE00C3E272 /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61B6BA91E617EDE00C3E272 /* MainWindowController.swift */; };
 		F61B6BA21E61787A00C3E272 /* AddVerifyKeyWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = F61B6BA11E61787A00C3E272 /* AddVerifyKeyWindow.xib */; };
 		F61B6BA51E617EDE00C3E272 /* AddVerifyKeyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61B6BA41E617EDE00C3E272 /* AddVerifyKeyWindow.swift */; };
 		F61B6C4A1E61B78E00C3E272 /* HOTPGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = F61B6C431E61B78E00C3E272 /* HOTPGenerator.m */; };
@@ -79,6 +80,7 @@
 		F61B6B9C1E613DE300C3E272 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/I18n.strings; sourceTree = "<group>"; };
 		F61B6B9E1E613DE500C3E272 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/I18n.strings"; sourceTree = "<group>"; };
 		F61B6B9F1E614C7A00C3E272 /* StatusMenuController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusMenuController.swift; sourceTree = "<group>"; };
+		F61B6BA91E617EDE00C3E272 /* MainWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
 		F61B6BA11E61787A00C3E272 /* AddVerifyKeyWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AddVerifyKeyWindow.xib; sourceTree = "<group>"; };
 		F61B6BA41E617EDE00C3E272 /* AddVerifyKeyWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddVerifyKeyWindow.swift; sourceTree = "<group>"; };
 		F61B6BA81E61B76D00C3E272 /* GoldenPassport-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GoldenPassport-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 				F61B6C411E61B77A00C3E272 /* OTPAuth */,
 				F61B6BA71E61B6AF00C3E272 /* GTM */,
 				F61B6B891E6135B600C3E272 /* AppDelegate.swift */,
+				F61B6BA91E617EDE00C3E272 /* MainWindowController.swift */,
 				F61B6B9F1E614C7A00C3E272 /* StatusMenuController.swift */,
 				F61B6B8D1E6135B600C3E272 /* MainMenu.xib */,
 				F61B6BA41E617EDE00C3E272 /* AddVerifyKeyWindow.swift */,
@@ -436,6 +439,7 @@
 				F644B43C1FA2E36D00B4466C /* GTMNSNumber+64Bit.m in Sources */,
 				F61B6C4C1E61B78E00C3E272 /* OTPGenerator.m in Sources */,
 				F61B6BA01E614C7A00C3E272 /* StatusMenuController.swift in Sources */,
+				F61B6BA61E617EDE00C3E272 /* MainWindowController.swift in Sources */,
 				F6E3C59E1E6501FD00DB4EA6 /* SimulateKeyBoardEvent.swift in Sources */,
 				F644B43E1FA2E36D00B4466C /* GTMNSString+Replace.m in Sources */,
 				F644B43A1FA2E36D00B4466C /* GTMFileSystemKQueue.m in Sources */,

@@ -4,7 +4,7 @@
 
 GoldenPassport 是一个原生 macOS 验证码管理工具，用于管理 OTPAuth / Google Authenticator 验证码。
 
-本仓库 fork 自 [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)。当前 fork 保留了原有菜单栏工作流，新增了已有认证信息的编辑模式，并将项目更新为使用 Xcode 和 Swift Package Manager 构建。
+本仓库 fork 自 [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)。当前 fork 新增了完整的主窗口用于管理认证信息，同时保留原有菜单栏快速复制工作流，并将项目更新为使用 Xcode 和 Swift Package Manager 构建。
 
 ## 截图
 
@@ -19,6 +19,7 @@ GoldenPassport 是一个原生 macOS 验证码管理工具，用于管理 OTPAut
 ## 功能
 
 - 从二维码图片识别 OTPAuth URL
+- 在完整 macOS 主窗口中管理认证信息
 - 通过 macOS 菜单栏管理验证码
 - 编辑已有认证信息，包括名称和 OTPAuth URL
 - 支持英文和简体中文界面
@@ -44,18 +45,21 @@ GoldenPassport 是一个原生 macOS 验证码管理工具，用于管理 OTPAut
 ## 使用
 
 1. 启动 `GoldenPassport.app`。
-2. 从状态栏菜单添加 OTPAuth URL，或导入已有数据。
-3. 点击认证菜单项复制当前验证码。
+2. 使用主窗口添加、编辑、删除、导入、导出和复制验证码。
+3. 使用菜单栏入口快速查看和复制验证码。
 4. 使用 `Shift+Cmd+[0-9]` 直接填入验证码。
 
-### 编辑模式
+### 主窗口
 
-本 fork 新增了已有认证信息的编辑模式：
+主窗口是主要的管理界面：
 
-1. 点击 `编辑` 菜单项。
-2. 从状态栏菜单中选择要编辑的认证信息。
-3. 修改名称或 OTPAuth URL，然后保存。
-4. 点击 `完成编辑` 退出编辑模式。
+- 从左侧列表选择认证信息，查看当前验证码和 OTPAuth URL。
+- 点击 `添加` 创建新的认证信息。
+- 点击 `编辑` 修改选中认证信息的名称或 OTPAuth URL。
+- 点击 `删除` 移除选中的认证信息。
+- 在同一窗口中使用导入、导出、开机启动和 HTTP 端口设置。
+
+菜单栏仍然保留，用于快速复制和快捷键填充验证码。
 
 ## REST API
 
@@ -90,6 +94,7 @@ xcodebuild \
 ## 本 fork 的主要变更
 
 - Fork 自 [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)
+- 新增完整主窗口用于管理认证信息
 - 新增已有认证信息的编辑模式
 - 新增编辑图标资源和菜单状态处理
 - 新增英文和简体中文界面本地化

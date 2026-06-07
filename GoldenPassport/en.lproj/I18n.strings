@@ -38,3 +38,26 @@
 "http.port.invalid" = "Port must be an integer greater than 0 and less than 65535. Please check and try again.";
 
 "launch_at_login.failed" = "Failed to update launch-at-login setting:\n%@";
+
+"main.open_window" = "Open GoldenPassport";
+"main.authenticators" = "Authenticators";
+"main.details" = "Details";
+"main.name" = "Name";
+"main.otpauth_url" = "OTPAuth URL";
+"main.add" = "Add";
+"main.edit" = "Edit";
+"main.delete" = "Delete";
+"main.save" = "Save";
+"main.cancel" = "Cancel";
+"main.copy_code" = "Copy Code";
+"main.import" = "Import";
+"main.export" = "Export";
+"main.hide_window" = "Hide Window";
+"main.settings" = "Settings";
+"main.save_port" = "Save Port";
+"main.no_selection" = "No authenticator selected.";
+"main.invalid_code" = "Unable to generate a code for this authenticator.";
+"main.adding" = "Adding a new authenticator.";
+"main.delete.confirm" = "Delete `%@`?";
+"main.name.required" = "Name is required.";
+"main.copied" = "Verification code copied.";

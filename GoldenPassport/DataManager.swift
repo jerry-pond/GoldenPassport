@@ -8,6 +8,11 @@
 
 import Foundation
 
+struct AuthEntry {
+    let tag: String
+    let url: String
+}
+
 final class DataManager {
     static let shared = DataManager()
     private let authDataFile = "gp.secrets"
@@ -45,20 +50,43 @@ final class DataManager {
         return authData[tag]
     }
 
+    func allAuthEntries() -> [AuthEntry] {
+        return authData
+            .map { AuthEntry(tag: $0.key, url: $0.value) }
+            .sorted { $0.tag.localizedCaseInsensitiveCompare($1.tag) == .orderedAscending }
+    }
+
+    func verificationCode(for tag: String) -> String? {
+        guard let url = authData[tag] else {
+            return nil
+        }
+        return verificationCode(forURL: url)
+    }
+
+    func isValidOTPAuthURL(_ url: String) -> Bool {
+        guard let otpInfo = OTPAuthURLParser(url) else {
+            return false
+        }
+        return OTPAuthURL.base32Decode(otpInfo.secret) != nil
+    }
+
+    private func verificationCode(forURL url: String) -> String? {
+        guard let otpData = OTPAuthURLParser(url),
+              let data = OTPAuthURL.base32Decode(otpData.secret),
+              let gen = TOTPGenerator(secret: data,
+                                      algorithm: TOTPGenerator.defaultAlgorithm(),
+                                      digits: TOTPGenerator.defaultDigits(),
+                                      period: TOTPGenerator.defaultPeriod()) else {
+            return nil
+        }
+
+        return gen.generateOTP(for: Date())
+    }
+
     func allAuthCode() -> [(key: String, value: String)] {
         var result: [(key: String, value: String)] = []
-        for d in authData {
-            let url = d.value
-            let otpData = OTPAuthURLParser(url)!
-
-            let data = OTPAuthURL.base32Decode(otpData.secret)
-            let gen = TOTPGenerator(secret: data,
-                                    algorithm: TOTPGenerator.defaultAlgorithm(),
-                                    digits: TOTPGenerator.defaultDigits(),
-                                    period: TOTPGenerator.defaultPeriod())
-            let code = gen?.generateOTP(for: Date())
-
-            result.append((key: d.key, value: code ?? "<get code failed>"))
+        for entry in allAuthEntries() {
+            result.append((key: entry.tag, value: verificationCode(forURL: entry.url) ?? "<get code failed>"))
         }
         return result
     }
