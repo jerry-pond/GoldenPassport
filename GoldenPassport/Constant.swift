@@ -8,12 +8,20 @@
 
 import Foundation
 
-let EXPIRE_TIME_STR = "过期时间: "
+func L(_ key: String) -> String {
+    return NSLocalizedString(key, tableName: "I18n", comment: "")
+}
 
-let COPY_AUTH_CODE_STR = "点击复制验证码"
-let DELETE_VERIFY_KEY_STR = "点击删除认证记录"
+func LF(_ key: String, _ arguments: CVarArg...) -> String {
+    return String(format: L(key), arguments: arguments)
+}
 
-let DONE_REMOVE_STR = "完成删除"
-let REMOVE_STR = "删除"
+var EXPIRE_TIME_STR: String { L("status.expire_time") }
+
+var COPY_AUTH_CODE_STR: String { L("status.copy_code.tooltip") }
+var DELETE_VERIFY_KEY_STR: String { L("status.delete_key.tooltip") }
+
+var DONE_REMOVE_STR: String { L("menu.delete.done") }
+var REMOVE_STR: String { L("menu.delete") }
 
 let DEFAULT_HTTP_PORT = 17304

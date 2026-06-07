@@ -93,7 +93,7 @@ class StatusMenuController: NSObject {
         statusMenu.insertItem(timerMenuItem, at: 0)
         enableAutoStart.state = NSControl.StateValue(rawValue: DataManager.shared.getHttpServerAutoStart() ? 1 : 0)
 
-        editMenuItem = NSMenuItem(title: "编辑", action: #selector(editClicked), keyEquivalent: "e")
+        editMenuItem = NSMenuItem(title: L("menu.edit"), action: #selector(editClicked), keyEquivalent: "e")
         editMenuItem.target = self
         if let deleteIndex = statusMenu.items.firstIndex(of: deleteMenuItem) {
             statusMenu.insertItem(editMenuItem, at: deleteIndex + 1)
@@ -162,7 +162,7 @@ class StatusMenuController: NSObject {
             authCodeMenuItem.toolTip = DELETE_VERIFY_KEY_STR
             authCodeMenuItem.image = removeIcon
         } else if markEditVerifiedKey {
-            authCodeMenuItem.toolTip = "点击编辑此认证信息"
+            authCodeMenuItem.toolTip = L("status.edit_key.tooltip")
             authCodeMenuItem.image = editIcon
         } else {
             authCodeMenuItem.toolTip = COPY_AUTH_CODE_STR
@@ -215,15 +215,15 @@ class StatusMenuController: NSObject {
     
     private func updateHttpSwitchMenuItem() {
         if (http == nil || http.state != HttpServerIO.HttpServerIOState.running) {
-            httpServerSwitch.title = "开启HTTP服务"
+            httpServerSwitch.title = L("http.start")
         } else {
-            httpServerSwitch.title = "停止HTTP服务"
+            httpServerSwitch.title = L("http.stop")
         }
     }
 
     private func updateHttpURLMenuItem() {
         let serverPort = DataManager.shared.getHttpServerPort()
-        let url = "浏览器访问 http://localhost:\(serverPort)"
+        let url = LF("http.open_url", serverPort)
         httpUrlMenuItem.title = url
         if (http == nil) {
             httpUrlMenuItem.isHidden = true
@@ -258,7 +258,7 @@ class StatusMenuController: NSObject {
             try http.start(UInt16(serverPort)!, forceIPv4: true)
         } catch {
             let alert = NSAlert()
-            alert.messageText = "HTTP服务启动失败:\n\(error)"
+            alert.messageText = LF("http.start_failed", "\(error)")
             alert.runModal()
         }
     }
@@ -278,7 +278,7 @@ class StatusMenuController: NSObject {
     @IBAction func deleteClicked(_ sender: NSMenuItem) {
         markDeleteVerifiedKey = !markDeleteVerifiedKey
         markEditVerifiedKey = false
-        editMenuItem.title = "编辑"
+        editMenuItem.title = L("menu.edit")
 
         deleteMenuItem.title = markDeleteVerifiedKey ? DONE_REMOVE_STR : REMOVE_STR
 
@@ -288,8 +288,8 @@ class StatusMenuController: NSObject {
 
         if markDeleteVerifiedKey {
             let alert: NSAlert = NSAlert()
-            alert.messageText = "已进入删除模式，请到状态栏菜单中删除认证信息。\n\n删除后，请执行`\(DONE_REMOVE_STR)`退出删除模式"
-            alert.addButton(withTitle: "确定")
+            alert.messageText = LF("delete.mode.message", DONE_REMOVE_STR)
+            alert.addButton(withTitle: L("common.ok"))
             alert.alertStyle = NSAlert.Style.informational
             alert.runModal()
         }
@@ -298,9 +298,9 @@ class StatusMenuController: NSObject {
     @IBAction func editClicked(_ sender: NSMenuItem) {
         markEditVerifiedKey = !markEditVerifiedKey
         markDeleteVerifiedKey = false
-        deleteMenuItem.title = "删除"
+        deleteMenuItem.title = L("menu.delete")
 
-        editMenuItem.title = markEditVerifiedKey ? "完成编辑" : "编辑"
+        editMenuItem.title = markEditVerifiedKey ? L("menu.edit.done") : L("menu.edit")
 
         for authCodeMenuItem in authCodeMenuItems {
             updateAuthCodeMenuItemState(authCodeMenuItem)
@@ -308,8 +308,8 @@ class StatusMenuController: NSObject {
 
         if markEditVerifiedKey {
             let alert: NSAlert = NSAlert()
-            alert.messageText = "已进入编辑模式，请到状态栏菜单中选择要修改的认证信息。\n\n修改后，请执行`完成编辑`退出编辑模式"
-            alert.addButton(withTitle: "确定")
+            alert.messageText = LF("edit.mode.message", L("menu.edit.done"))
+            alert.addButton(withTitle: L("common.ok"))
             alert.alertStyle = NSAlert.Style.informational
             alert.runModal()
         }
@@ -330,13 +330,13 @@ class StatusMenuController: NSObject {
         let count = DataManager.shared.importData(dist: openPanel.url!)
         needRefreshCodeMenus = true
         let alert = NSAlert()
-        alert.messageText = "成功导入\(count)条记录！"
+        alert.messageText = LF("import.success", count)
         alert.runModal()
     }
     
     @IBAction func exportClicked(_ sender: NSMenuItem) {
         let savePanel = NSSavePanel()
-        savePanel.title = "导出认证信息"
+        savePanel.title = L("export.title")
         savePanel.nameFieldStringValue = "GoldenPassport.secrets"
         let i = savePanel.runModal()
         if i == NSApplication.ModalResponse.cancel {
@@ -377,7 +377,7 @@ class StatusMenuController: NSObject {
     }
     
     @IBAction func aboutClicked(sender: NSMenuItem) {
-        if let url = URL(string: "https://github.com/stanzhai/GoldenPassport") {
+        if let url = URL(string: "https://github.com/jerry-pond/GoldenPassport") {
             NSWorkspace.shared.open(url)
         }
     }

@@ -1,5 +1,7 @@
 # GoldenPassport
 
+[简体中文](README.zh-CN.md) | English
+
 GoldenPassport is a native macOS authenticator app for managing OTPAuth / Google Authenticator verification codes.
 
 This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport). This fork keeps the original menu bar workflow, adds an edit mode for existing authenticators, and updates the project to build with Xcode and Swift Package Manager.
@@ -19,6 +21,7 @@ This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzh
 - Recognize OTPAuth URLs from QR code images
 - Manage authentication codes from the macOS menu bar
 - Edit existing authentication entries, including name and OTPAuth URL
+- Support English and Simplified Chinese UI
 - Copy verification codes from the status menu
 - Fill verification codes with global hotkeys: `Shift+Cmd+[0-9]`
 - Export and import authentication codes
@@ -88,6 +91,8 @@ xcodebuild \
 - Forked from [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)
 - Added edit mode for existing authentication entries
 - Added edit icon assets and menu state handling
+- Added English and Simplified Chinese app localization
+- Added Simplified Chinese README
 - Migrated dependency management from CocoaPods to Swift Package Manager
 - Added `Package.resolved` to lock SwiftPM dependency resolution
 - Updated build and release packaging for separate `arm64` and `x86_64` macOS apps

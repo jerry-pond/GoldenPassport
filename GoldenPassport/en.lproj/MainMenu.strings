@@ -1,8 +1,12 @@
-
-/* Class = "NSMenuItem"; title = "Item 3"; ObjectID = "GAm-17-nOa"; */
-
-"add_key_menu_item.title" = "Quit";
-"remove_key_menu_item.title" = "Quit";
-
-"about_menu_item.title" = "Quit";
-"quit_menu_item.title" = "Quit";
+"tVu-JO-mUd.title" = "Authenticator Management";
+"EIF-pz-Vhv.title" = "Add...";
+"EUi-mw-GQs.title" = "Delete";
+"Kmy-wJ-5fb.title" = "Import";
+"QDc-eW-cqJ.title" = "Export";
+"H9A-2l-spp.title" = "HTTP API";
+"6Dm-32-chD.title" = "Start HTTP Service";
+"HPl-pR-Wll.title" = "Start HTTP service at launch";
+"rfh-jG-SkV.title" = "URL";
+"jhX-Gv-47b.title" = "Change Port...";
+"lkD-dK-pdV.title" = "Help";
+"GAm-17-nOa.title" = "Quit";

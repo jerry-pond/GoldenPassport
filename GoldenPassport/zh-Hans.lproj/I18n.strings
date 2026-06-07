@@ -1,8 +1,36 @@
-/*
-  I18n.strings
-  GoldenPassport
+"common.ok" = "确定";
 
-  Created by StanZhai on 2017/2/25.
-  Copyright © 2017年 StanZhai. All rights reserved.
-*/
-"quit_menu" = "退出";
+"status.expire_time" = "过期时间: ";
+"status.copy_code.tooltip" = "点击复制验证码";
+"status.delete_key.tooltip" = "点击删除认证记录";
+"status.edit_key.tooltip" = "点击编辑此认证信息";
+
+"menu.add" = "添加";
+"menu.edit" = "编辑";
+"menu.edit.done" = "完成编辑";
+"menu.delete" = "删除";
+"menu.delete.done" = "完成删除";
+
+"auth.add.success" = "添加成功，请到状态栏菜单查看。";
+"auth.edit.success" = "修改成功，请到状态栏菜单查看。";
+"auth.invalid_url" = "无法解析密钥，请检查 OTPAuth URL。";
+
+"add.scan_qr" = "从二维码中识别...";
+"add.otpauth_url" = "OTPAuth URL：";
+"add.tag" = "标识：";
+"add.tag.placeholder" = "可选：为此验证码添加特定标识，便于识别";
+
+"delete.mode.message" = "已进入删除模式，请到状态栏菜单中删除认证信息。\n\n删除后，请执行 `%@` 退出删除模式。";
+"edit.mode.message" = "已进入编辑模式，请到状态栏菜单中选择要修改的认证信息。\n\n修改后，请执行 `%@` 退出编辑模式。";
+
+"import.success" = "成功导入 %d 条记录！";
+"export.title" = "导出认证信息";
+
+"http.start" = "开启 HTTP 服务";
+"http.stop" = "停止 HTTP 服务";
+"http.open_url" = "浏览器访问 http://localhost:%@";
+"http.start_failed" = "HTTP 服务启动失败:\n%@";
+"http.port.window.title" = "HTTP 服务端口设置";
+"http.port.label" = "HTTP 服务端口：";
+"http.port.updated" = "端口号已修改。";
+"http.port.invalid" = "端口号必须是大于 0 小于 65535 的整数，请检查后重试！";

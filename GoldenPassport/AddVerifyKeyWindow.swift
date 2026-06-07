@@ -28,6 +28,7 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
         //self.window?.backgroundColor = color
         self.window?.isMovableByWindowBackground = true
         self.window?.center()
+        localizeSubviews(in: self.window?.contentView)
     }
     
     func clearTextField() {
@@ -73,7 +74,7 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
         let tag = tagTextField.stringValue
         
         let alert: NSAlert = NSAlert()
-        alert.addButton(withTitle: "确定")
+        alert.addButton(withTitle: L("common.ok"))
         alert.alertStyle = NSAlert.Style.informational
         
         var isValid = false
@@ -92,9 +93,9 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
             notificationCenter.post(name: NSNotification.Name(rawValue: "VerifyKeyAdded"), object: nil)
             self.window?.close()
             
-            alert.messageText = isEditing ? "修改成功，请到状态栏菜单查看。" : "添加成功，请到状态栏菜单查看。"
+            alert.messageText = isEditing ? L("auth.edit.success") : L("auth.add.success")
         } else {
-            alert.messageText = "无法解析密钥，请检查OTPAuth URL。"
+            alert.messageText = L("auth.invalid_url")
             alert.alertStyle = NSAlert.Style.warning
         }
         
@@ -103,5 +104,39 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
     
     @IBAction func cancelBtnClicked(_ sender: NSButton) {
         self.window?.close()
+    }
+
+    private func localizeSubviews(in view: NSView?) {
+        guard let view = view else {
+            return
+        }
+
+        for subview in view.subviews {
+            if let button = subview as? NSButton {
+                switch button.title {
+                case "从二维码中识别...":
+                    button.title = L("add.scan_qr")
+                case "添加":
+                    button.title = L("menu.add")
+                default:
+                    break
+                }
+            } else if let textField = subview as? NSTextField {
+                if !textField.isEditable {
+                    switch textField.stringValue {
+                    case "OTPAuth URL：":
+                        textField.stringValue = L("add.otpauth_url")
+                    case "标识：":
+                        textField.stringValue = L("add.tag")
+                    default:
+                        break
+                    }
+                } else if textField.placeholderString == "可选：为此验证码添加特定标识，便于识别" {
+                    textField.placeholderString = L("add.tag.placeholder")
+                }
+            }
+
+            localizeSubviews(in: subview)
+        }
     }
 }
