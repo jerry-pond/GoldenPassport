@@ -29,7 +29,7 @@ final class DataManager {
     }
 
     func addOTPAuthURL(tag: String, url: String) {
-        authData[tag] = url
+        authData[normalizedTag(tag)] = normalizedURL(url)
         saveData(authDataFile, data: authData)
     }
 
@@ -41,7 +41,7 @@ final class DataManager {
     func updateOTPAuthURL(oldTag: String, newTag: String, newUrl: String) {
         if authData[oldTag] != nil {
             authData.removeValue(forKey: oldTag)
-            authData[newTag] = newUrl
+            authData[normalizedTag(newTag)] = normalizedURL(newUrl)
             saveData(authDataFile, data: authData)
         }
     }
@@ -64,7 +64,7 @@ final class DataManager {
     }
 
     func isValidOTPAuthURL(_ url: String) -> Bool {
-        guard let otpInfo = OTPAuthURLParser(url) else {
+        guard let otpInfo = OTPAuthURLParser(normalizedURL(url)) else {
             return false
         }
         return OTPAuthURL.base32Decode(otpInfo.secret) != nil
@@ -134,7 +134,7 @@ final class DataManager {
         var count = 0;
         for k in data {
             if authData[k.key] == nil {
-                authData[k.key] = k.value
+                authData[normalizedTag(k.key)] = normalizedURL(k.value)
                 count = count + 1
             }
         }
@@ -179,6 +179,14 @@ final class DataManager {
         }
 
         return path
+    }
+
+    private func normalizedTag(_ tag: String) -> String {
+        return tag.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func normalizedURL(_ url: String) -> String {
+        return url.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
 }

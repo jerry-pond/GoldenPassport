@@ -11,8 +11,10 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     private var selectedTag: String?
     private var formMode: FormMode = .viewing
     private var refreshTimer: Timer?
+    private var sortAscending = true
 
     private let tableView = NSTableView()
+    private let sortControl = NSSegmentedControl(labels: [L("main.sort_az"), L("main.sort_za")], trackingMode: .selectOne, target: nil, action: nil)
     private let nameField = NSTextField()
     private let urlField = NSTextField()
     private let codeLabel = NSTextField(labelWithString: "")
@@ -40,6 +42,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         window.minSize = NSSize(width: 820, height: 500)
         super.init(window: window)
         setupUI()
+        sortControl.selectedSegment = 0
         reloadData(selecting: nil)
     }
 
@@ -198,11 +201,19 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         tableView.usesAlternatingRowBackgroundColors = true
         scrollView.documentView = tableView
 
+        sortControl.target = self
+        sortControl.action = #selector(sortChanged)
+        sortControl.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(sortControl)
+
         NSLayoutConstraint.activate([
             scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
             scrollView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
-            scrollView.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
-            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12)
+            scrollView.topAnchor.constraint(equalTo: sortControl.bottomAnchor, constant: 8),
+            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12),
+            sortControl.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            sortControl.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            sortControl.widthAnchor.constraint(equalToConstant: 160)
         ])
 
         return container
@@ -224,6 +235,8 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
         stack.addArrangedSubview(makeLabeledField(label: L("main.name"), field: nameField))
         stack.addArrangedSubview(makeLabeledField(label: L("main.otpauth_url"), field: urlField))
+        urlField.target = self
+        urlField.action = #selector(urlFieldChanged)
 
         codeLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 30, weight: .semibold)
         expiryLabel.textColor = .secondaryLabelColor
@@ -323,6 +336,9 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     private func reloadData(selecting tag: String?) {
         entries = DataManager.shared.allAuthEntries()
+        if !sortAscending {
+            entries.reverse()
+        }
         tableView.reloadData()
 
         if let tag = tag, let index = entries.firstIndex(where: { $0.tag == tag }) {
@@ -438,6 +454,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     @objc private func saveClicked() {
         let tag = nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let url = urlField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        urlField.stringValue = url
 
         guard !tag.isEmpty else {
             statusLabel.stringValue = L("main.name.required")
@@ -475,6 +492,24 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(code, forType: .string)
         statusLabel.stringValue = L("main.copied")
+    }
+
+    @objc private func urlFieldChanged() {
+        let url = urlField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        urlField.stringValue = url
+
+        guard formMode == .adding,
+              nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let otpInfo = OTPAuthURLParser(url) else {
+            return
+        }
+
+        nameField.stringValue = otpInfo.displayName
+    }
+
+    @objc private func sortChanged() {
+        sortAscending = sortControl.selectedSegment != 1
+        reloadData(selecting: selectedTag)
     }
 
     @objc private func importClicked() {

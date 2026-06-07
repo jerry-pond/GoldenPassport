@@ -61,3 +61,5 @@
 "main.delete.confirm" = "Delete `%@`?";
 "main.name.required" = "Name is required.";
 "main.copied" = "Verification code copied.";
+"main.sort_az" = "A-Z";
+"main.sort_za" = "Z-A";

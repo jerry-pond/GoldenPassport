@@ -28,6 +28,8 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
         //self.window?.backgroundColor = color
         self.window?.isMovableByWindowBackground = true
         self.window?.center()
+        otpTextField.target = self
+        otpTextField.action = #selector(otpTextFieldChanged)
         localizeSubviews(in: self.window?.contentView)
     }
     
@@ -57,21 +59,20 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
         if (results?.count)! > 0 {
             let qrFeature = results?.last as! CIQRCodeFeature
             let data = qrFeature.messageString
-            otpTextField.stringValue = data!
-            
-            let otpInfo = OTPAuthURLParser(data!)!
-            if (otpInfo.user != nil) {
-                tagTextField.stringValue = otpInfo.user! + "@" + otpInfo.host
-            } else {
-                tagTextField.stringValue = otpInfo.host
-            }
+            otpTextField.stringValue = data!.trimmingCharacters(in: .whitespacesAndNewlines)
+            updateTagFromOTPAuthURLIfNeeded(force: true)
             
         }
     }
 
     @IBAction func okBtnClicked(_ sender: NSButton) {
-        let url = otpTextField.stringValue
-        let tag = tagTextField.stringValue
+        let url = otpTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        var tag = tagTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        otpTextField.stringValue = url
+        if tag.isEmpty, let otpInfo = OTPAuthURLParser(url) {
+            tag = otpInfo.displayName
+            tagTextField.stringValue = tag
+        }
         
         let alert: NSAlert = NSAlert()
         alert.addButton(withTitle: L("common.ok"))
@@ -104,6 +105,22 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
     
     @IBAction func cancelBtnClicked(_ sender: NSButton) {
         self.window?.close()
+    }
+
+    @objc private func otpTextFieldChanged() {
+        otpTextField.stringValue = otpTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        updateTagFromOTPAuthURLIfNeeded(force: false)
+    }
+
+    private func updateTagFromOTPAuthURLIfNeeded(force: Bool) {
+        let url = otpTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let otpInfo = OTPAuthURLParser(url) else {
+            return
+        }
+
+        if force || tagTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            tagTextField.stringValue = otpInfo.displayName
+        }
     }
 
     private func localizeSubviews(in view: NSView?) {

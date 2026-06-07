@@ -61,3 +61,5 @@
 "main.delete.confirm" = "删除 `%@`？";
 "main.name.required" = "名称不能为空。";
 "main.copied" = "验证码已复制。";
+"main.sort_az" = "升序";
+"main.sort_za" = "降序";
