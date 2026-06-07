@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppKit
 
 enum KeyCode: CGKeyCode {
     case a = 0

@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B01F360F794108C7111E68EA /* Pods_GoldenPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57A3C1B1D39C230CC7385FD7 /* Pods_GoldenPassport.framework */; };
+		B01F360F794108C7111E68EB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = B01F360F794108C7111E68EC /* Swifter */; };
 		F61B6B8A1E6135B600C3E272 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61B6B891E6135B600C3E272 /* AppDelegate.swift */; };
 		F61B6B8C1E6135B600C3E272 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F61B6B8B1E6135B600C3E272 /* Assets.xcassets */; };
 		F61B6B8F1E6135B600C3E272 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = F61B6B8D1E6135B600C3E272 /* MainMenu.xib */; };
@@ -69,9 +69,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		57A3C1B1D39C230CC7385FD7 /* Pods_GoldenPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoldenPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		609363E68683419B32E33CDD /* Pods-GoldenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoldenPassport.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GoldenPassport/Pods-GoldenPassport.debug.xcconfig"; sourceTree = "<group>"; };
-		828169139D875ED2E51025BD /* Pods-GoldenPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoldenPassport.release.xcconfig"; path = "Pods/Target Support Files/Pods-GoldenPassport/Pods-GoldenPassport.release.xcconfig"; sourceTree = "<group>"; };
 		F61B6B861E6135B600C3E272 /* GoldenPassport.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoldenPassport.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F61B6B891E6135B600C3E272 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F61B6B8B1E6135B600C3E272 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -183,36 +180,26 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		F61B6B831E6135B600C3E272 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F6E039261E6473F2009499DD /* Carbon.framework in Frameworks */,
-				F61B6C571E61BE1C00C3E272 /* libsqlite3.tbd in Frameworks */,
-				F61B6C561E61BE0100C3E272 /* libz.tbd in Frameworks */,
-				B01F360F794108C7111E68EA /* Pods_GoldenPassport.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+			F61B6B831E6135B600C3E272 /* Frameworks */ = {
+				isa = PBXFrameworksBuildPhase;
+				buildActionMask = 2147483647;
+				files = (
+					F6E039261E6473F2009499DD /* Carbon.framework in Frameworks */,
+					F61B6C571E61BE1C00C3E272 /* libsqlite3.tbd in Frameworks */,
+					F61B6C561E61BE0100C3E272 /* libz.tbd in Frameworks */,
+					B01F360F794108C7111E68EB /* Swifter in Frameworks */,
+				);
+				runOnlyForDeploymentPostprocessing = 0;
+			};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		079B7EB5A347DA8FBD96B164 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				609363E68683419B32E33CDD /* Pods-GoldenPassport.debug.xcconfig */,
-				828169139D875ED2E51025BD /* Pods-GoldenPassport.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		F61B6B7D1E6135B600C3E272 = {
 			isa = PBXGroup;
 			children = (
 				F61B6B881E6135B600C3E272 /* GoldenPassport */,
 				F61B6B871E6135B600C3E272 /* Products */,
-				F61B6C4E1E61B86800C3E272 /* Frameworks */,
-				079B7EB5A347DA8FBD96B164 /* Pods */,
+			F61B6C4E1E61B86800C3E272 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -348,39 +335,39 @@
 			name = OTPAuth;
 			sourceTree = "<group>";
 		};
-		F61B6C4E1E61B86800C3E272 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F6E039251E6473F2009499DD /* Carbon.framework */,
-				F61B6C551E61BE0100C3E272 /* libz.tbd */,
-				F61B6C4F1E61B86900C3E272 /* libsqlite3.tbd */,
-				57A3C1B1D39C230CC7385FD7 /* Pods_GoldenPassport.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
+			F61B6C4E1E61B86800C3E272 /* Frameworks */ = {
+				isa = PBXGroup;
+				children = (
+					F6E039251E6473F2009499DD /* Carbon.framework */,
+					F61B6C551E61BE0100C3E272 /* libz.tbd */,
+					F61B6C4F1E61B86900C3E272 /* libsqlite3.tbd */,
+				);
+				name = Frameworks;
+				sourceTree = "<group>";
+			};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F61B6B851E6135B600C3E272 /* GoldenPassport */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F61B6B931E6135B600C3E272 /* Build configuration list for PBXNativeTarget "GoldenPassport" */;
-			buildPhases = (
-				D422619C5BD080DA3EE1ECDF /* [CP] Check Pods Manifest.lock */,
-				F61B6B821E6135B600C3E272 /* Sources */,
-				F61B6B831E6135B600C3E272 /* Frameworks */,
-				F61B6B841E6135B600C3E272 /* Resources */,
-				7C0002F6FB3399D142AC582F /* [CP] Embed Pods Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = GoldenPassport;
-			productName = GoldenPassport;
-			productReference = F61B6B861E6135B600C3E272 /* GoldenPassport.app */;
-			productType = "com.apple.product-type.application";
-		};
+			F61B6B851E6135B600C3E272 /* GoldenPassport */ = {
+				isa = PBXNativeTarget;
+				buildConfigurationList = F61B6B931E6135B600C3E272 /* Build configuration list for PBXNativeTarget "GoldenPassport" */;
+				buildPhases = (
+					F61B6B821E6135B600C3E272 /* Sources */,
+					F61B6B831E6135B600C3E272 /* Frameworks */,
+					F61B6B841E6135B600C3E272 /* Resources */,
+				);
+				buildRules = (
+				);
+				dependencies = (
+				);
+				name = GoldenPassport;
+				packageProductDependencies = (
+					B01F360F794108C7111E68EC /* Swifter */,
+				);
+				productName = GoldenPassport;
+				productReference = F61B6B861E6135B600C3E272 /* GoldenPassport.app */;
+				productType = "com.apple.product-type.application";
+			};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -389,7 +376,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0820;
 				LastUpgradeCheck = 1340;
-				ORGANIZATIONNAME = StanZhai;
+				ORGANIZATIONNAME = jerry;
 				TargetAttributes = {
 					F61B6B851E6135B600C3E272 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -399,7 +386,7 @@
 				};
 			};
 			buildConfigurationList = F61B6B811E6135B600C3E272 /* Build configuration list for PBXProject "GoldenPassport" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -408,12 +395,15 @@
 				Base,
 				"zh-Hans",
 			);
-			mainGroup = F61B6B7D1E6135B600C3E272;
-			productRefGroup = F61B6B871E6135B600C3E272 /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
+				mainGroup = F61B6B7D1E6135B600C3E272;
+				packageReferences = (
+					B01F360F794108C7111E68ED /* XCRemoteSwiftPackageReference "swifter" */,
+				);
+				productRefGroup = F61B6B871E6135B600C3E272 /* Products */;
+				projectDirPath = "";
+				projectRoot = "";
 			targets = (
-				F61B6B851E6135B600C3E272 /* GoldenPassport */,
+			F61B6B851E6135B600C3E272 /* GoldenPassport */,
 			);
 		};
 /* End PBXProject section */
@@ -432,45 +422,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		7C0002F6FB3399D142AC582F /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GoldenPassport/Pods-GoldenPassport-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Swifter/Swifter.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Swifter.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GoldenPassport/Pods-GoldenPassport-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D422619C5BD080DA3EE1ECDF /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-GoldenPassport-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F61B6B821E6135B600C3E272 /* Sources */ = {
@@ -605,7 +556,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -659,57 +610,71 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
-		F61B6B941E6135B600C3E272 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 609363E68683419B32E33CDD /* Pods-GoldenPassport.debug.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = NO;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = GoldenPassport/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				MARKETING_VERSION = v0.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = site.stanzhai.GoldenPassport;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "GoldenPassport/GoldenPassport-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+			F61B6B941E6135B600C3E272 /* Debug */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ARCHS = "$(ARCHS_STANDARD)";
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					CLANG_ENABLE_MODULES = YES;
+					CLANG_ENABLE_OBJC_ARC = NO;
+					CLANG_ENABLE_OBJC_WEAK = YES;
+					CODE_SIGN_IDENTITY = "-";
+					COMBINE_HIDPI_IMAGES = YES;
+					CURRENT_PROJECT_VERSION = 8;
+					INFOPLIST_FILE = GoldenPassport/Info.plist;
+					LD_RUNPATH_SEARCH_PATHS = (
+						"$(inherited)",
+						"@executable_path/../Frameworks",
+					);
+					MACOSX_DEPLOYMENT_TARGET = 11.0;
+					MARKETING_VERSION = v0.1.8;
+					ONLY_ACTIVE_ARCH = YES;
+					PRODUCT_BUNDLE_IDENTIFIER = site.stanzhai.GoldenPassport;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_OBJC_BRIDGING_HEADER = "GoldenPassport/GoldenPassport-Bridging-Header.h";
+					SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+					SWIFT_VERSION = 5.0;
+				};
+				name = Debug;
 			};
-			name = Debug;
-		};
-		F61B6B951E6135B600C3E272 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 828169139D875ED2E51025BD /* Pods-GoldenPassport.release.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = NO;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = GoldenPassport/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				MARKETING_VERSION = v0.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = site.stanzhai.GoldenPassport;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "GoldenPassport/GoldenPassport-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
+			F61B6B951E6135B600C3E272 /* Release */ = {
+				isa = XCBuildConfiguration;
+				buildSettings = {
+					ARCHS = "$(ARCHS_STANDARD)";
+					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					CLANG_ENABLE_MODULES = YES;
+					CLANG_ENABLE_OBJC_ARC = NO;
+					CLANG_ENABLE_OBJC_WEAK = YES;
+					CODE_SIGN_IDENTITY = "Developer ID Application";
+					CODE_SIGN_STYLE = Manual;
+					COMBINE_HIDPI_IMAGES = YES;
+					CURRENT_PROJECT_VERSION = 8;
+					ENABLE_HARDENED_RUNTIME = YES;
+					INFOPLIST_FILE = GoldenPassport/Info.plist;
+					LD_RUNPATH_SEARCH_PATHS = (
+						"$(inherited)",
+						"@executable_path/../Frameworks",
+					);
+					MACOSX_DEPLOYMENT_TARGET = 11.0;
+					MARKETING_VERSION = v0.1.8;
+					ONLY_ACTIVE_ARCH = NO;
+					PRODUCT_BUNDLE_IDENTIFIER = site.stanzhai.GoldenPassport;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_OBJC_BRIDGING_HEADER = "GoldenPassport/GoldenPassport-Bridging-Header.h";
+					SWIFT_VERSION = 5.0;
+				};
+				name = Release;
 			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -732,6 +697,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-	};
-	rootObject = F61B6B7E1E6135B600C3E272 /* Project object */;
-}
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B01F360F794108C7111E68ED /* XCRemoteSwiftPackageReference "swifter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/httpswift/swifter.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B01F360F794108C7111E68EC /* Swifter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B01F360F794108C7111E68ED /* XCRemoteSwiftPackageReference "swifter" */;
+			productName = Swifter;
+		};
+/* End XCSwiftPackageProductDependency section */
+		};
+		rootObject = F61B6B7E1E6135B600C3E272 /* Project object */;
+	}

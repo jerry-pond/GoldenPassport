@@ -33,6 +33,18 @@ final class DataManager {
         saveData(authDataFile, data: authData)
     }
 
+    func updateOTPAuthURL(oldTag: String, newTag: String, newUrl: String) {
+        if authData[oldTag] != nil {
+            authData.removeValue(forKey: oldTag)
+            authData[newTag] = newUrl
+            saveData(authDataFile, data: authData)
+        }
+    }
+
+    func getOTPAuthURL(for tag: String) -> String? {
+        return authData[tag]
+    }
+
     func allAuthCode() -> [(key: String, value: String)] {
         var result: [(key: String, value: String)] = []
         for d in authData {
@@ -84,7 +96,7 @@ final class DataManager {
         config[key] = value
         saveData(configFile, data: config)
     }
-    
+
     func importData(dist: URL) -> Int {
         let d = NSKeyedUnarchiver.unarchiveObject(withFile: dist.path)
         if d == nil {
@@ -101,7 +113,7 @@ final class DataManager {
         saveData(authDataFile, data: authData)
         return count
     }
-    
+
     func exportData(dist: URL) {
         let fileLocation = "\(dataFilePath)\(authDataFile)"
         let fileUrl = URL(fileURLWithPath: fileLocation)
@@ -137,8 +149,8 @@ final class DataManager {
                 print(error)
             }
         }
-        
+
         return path
     }
-    
+
 }

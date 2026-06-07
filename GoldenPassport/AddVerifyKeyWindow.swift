@@ -12,6 +12,8 @@ import CoreImage
 class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
     @IBOutlet weak var otpTextField: NSTextField!
     @IBOutlet weak var tagTextField: NSTextField!
+    var isEditing: Bool = false
+    var originalTag: String = ""
     
     override var windowNibName : String! {
         return "AddVerifyKeyWindow"
@@ -31,6 +33,8 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
     func clearTextField() {
         otpTextField.stringValue = ""
         tagTextField.stringValue = ""
+        isEditing = false
+        originalTag = ""
     }
     
     @IBAction func selectPicClicked(_ sender: NSButton) {
@@ -78,13 +82,17 @@ class AddVerifyKeyWindow: NSWindowController, NSWindowDelegate {
         }
         
         if isValid {
-            DataManager.shared.addOTPAuthURL(tag: tag, url: url)
+            if isEditing {
+                DataManager.shared.updateOTPAuthURL(oldTag: originalTag, newTag: tag, newUrl: url)
+            } else {
+                DataManager.shared.addOTPAuthURL(tag: tag, url: url)
+            }
             
             let notificationCenter = NotificationCenter.default
             notificationCenter.post(name: NSNotification.Name(rawValue: "VerifyKeyAdded"), object: nil)
             self.window?.close()
             
-            alert.messageText = "添加成功，请到状态栏菜单查看。"
+            alert.messageText = isEditing ? "修改成功，请到状态栏菜单查看。" : "添加成功，请到状态栏菜单查看。"
         } else {
             alert.messageText = "无法解析密钥，请检查OTPAuth URL。"
             alert.alertStyle = NSAlert.Style.warning

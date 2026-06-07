@@ -29,9 +29,12 @@ class StatusMenuController: NSObject {
     var statusIcon: NSImage!
     var copyIcon: NSImage!
     var removeIcon: NSImage!
+    var editIcon: NSImage!
 
     var markDeleteVerifiedKey: Bool = false
+    var markEditVerifiedKey: Bool = false
     var needRefreshCodeMenus: Bool = true
+    var editMenuItem: NSMenuItem!
     let authCodeMenuItemTagStartIndex = 100
     var http: HttpServer!
 
@@ -69,6 +72,12 @@ class StatusMenuController: NSObject {
         removeIcon = NSImage(named: "removeIcon")
         removeIcon.size = iconSize
         removeIcon.isTemplate = true
+
+        editIcon = NSImage(named: "editIcon")
+        if editIcon != nil {
+            editIcon.size = iconSize
+            editIcon.isTemplate = true
+        }
     }
 
     private func initStatusItem() {
@@ -83,6 +92,14 @@ class StatusMenuController: NSObject {
         timerMenuItem = NSMenuItem()
         statusMenu.insertItem(timerMenuItem, at: 0)
         enableAutoStart.state = NSControl.StateValue(rawValue: DataManager.shared.getHttpServerAutoStart() ? 1 : 0)
+
+        editMenuItem = NSMenuItem(title: "编辑", action: #selector(editClicked), keyEquivalent: "e")
+        editMenuItem.target = self
+        if let deleteIndex = statusMenu.items.firstIndex(of: deleteMenuItem) {
+            statusMenu.insertItem(editMenuItem, at: deleteIndex + 1)
+        } else {
+            statusMenu.insertItem(editMenuItem, at: 3)
+        }
     }
 
     @objc func openMenu(_ sender: AnyObject?) {
@@ -122,8 +139,7 @@ class StatusMenuController: NSObject {
                 authCodeMenuItem.target = self
                 authCodeMenuItem.action = #selector(authCodeMenuItemClicked)
                 authCodeMenuItem.tag = authCodeMenuItemTagStartIndex + idx
-                authCodeMenuItem.toolTip = markDeleteVerifiedKey ? DELETE_VERIFY_KEY_STR : COPY_AUTH_CODE_STR
-                authCodeMenuItem.image = markDeleteVerifiedKey ? removeIcon : copyIcon
+                updateAuthCodeMenuItemState(authCodeMenuItem)
                 authCodeMenuItem.keyEquivalent = "\(idx)"
                 authCodeMenuItem.keyEquivalentModifierMask = [.command, .shift]
                 authCodeMenuItems.append(authCodeMenuItem)
@@ -135,8 +151,22 @@ class StatusMenuController: NSObject {
             var idx = 0
             for codeInfo in authCodes {
                 authCodeMenuItems[idx].title = "\(codeInfo.key): \(codeInfo.value)"
+                updateAuthCodeMenuItemState(authCodeMenuItems[idx])
                 idx = idx + 1
             }
+        }
+    }
+
+    private func updateAuthCodeMenuItemState(_ authCodeMenuItem: NSMenuItem) {
+        if markDeleteVerifiedKey {
+            authCodeMenuItem.toolTip = DELETE_VERIFY_KEY_STR
+            authCodeMenuItem.image = removeIcon
+        } else if markEditVerifiedKey {
+            authCodeMenuItem.toolTip = "点击编辑此认证信息"
+            authCodeMenuItem.image = editIcon
+        } else {
+            authCodeMenuItem.toolTip = COPY_AUTH_CODE_STR
+            authCodeMenuItem.image = copyIcon
         }
     }
 
@@ -151,6 +181,15 @@ class StatusMenuController: NSObject {
                         DataManager.shared.removeOTPAuthURL(tag: codeInfo.key)
                         needRefreshCodeMenus = true
                         updateMenu()
+                    } else if markEditVerifiedKey {
+                        let url = DataManager.shared.getOTPAuthURL(for: codeInfo.key)
+                        addVerifyKeyWindow.showWindow(nil)
+                        addVerifyKeyWindow.window?.makeKeyAndOrderFront(nil)
+                        addVerifyKeyWindow.tagTextField.stringValue = codeInfo.key
+                        addVerifyKeyWindow.otpTextField.stringValue = url ?? ""
+                        addVerifyKeyWindow.originalTag = codeInfo.key
+                        addVerifyKeyWindow.isEditing = true
+                        NSApp.activate(ignoringOtherApps: true)
                     } else {
                         let pasteboard = NSPasteboard.general
                         pasteboard.clearContents()
@@ -238,17 +277,38 @@ class StatusMenuController: NSObject {
 
     @IBAction func deleteClicked(_ sender: NSMenuItem) {
         markDeleteVerifiedKey = !markDeleteVerifiedKey
+        markEditVerifiedKey = false
+        editMenuItem.title = "编辑"
 
         deleteMenuItem.title = markDeleteVerifiedKey ? DONE_REMOVE_STR : REMOVE_STR
 
         for authCodeMenuItem in authCodeMenuItems {
-            authCodeMenuItem.toolTip = markDeleteVerifiedKey ? DELETE_VERIFY_KEY_STR : COPY_AUTH_CODE_STR
-            authCodeMenuItem.image = markDeleteVerifiedKey ? removeIcon : copyIcon
+            updateAuthCodeMenuItemState(authCodeMenuItem)
         }
 
         if markDeleteVerifiedKey {
             let alert: NSAlert = NSAlert()
             alert.messageText = "已进入删除模式，请到状态栏菜单中删除认证信息。\n\n删除后，请执行`\(DONE_REMOVE_STR)`退出删除模式"
+            alert.addButton(withTitle: "确定")
+            alert.alertStyle = NSAlert.Style.informational
+            alert.runModal()
+        }
+    }
+
+    @IBAction func editClicked(_ sender: NSMenuItem) {
+        markEditVerifiedKey = !markEditVerifiedKey
+        markDeleteVerifiedKey = false
+        deleteMenuItem.title = "删除"
+
+        editMenuItem.title = markEditVerifiedKey ? "完成编辑" : "编辑"
+
+        for authCodeMenuItem in authCodeMenuItems {
+            updateAuthCodeMenuItemState(authCodeMenuItem)
+        }
+
+        if markEditVerifiedKey {
+            let alert: NSAlert = NSAlert()
+            alert.messageText = "已进入编辑模式，请到状态栏菜单中选择要修改的认证信息。\n\n修改后，请执行`完成编辑`退出编辑模式"
             alert.addButton(withTitle: "确定")
             alert.alertStyle = NSAlert.Style.informational
             alert.runModal()

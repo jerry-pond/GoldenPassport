@@ -47,10 +47,11 @@ echo $code
 
 # Building
 
-GoldenPassport uses `cocoapods` as the package manager tool, you should install it first.
+GoldenPassport uses Swift Package Manager for dependencies.
 
-1. `pod install` to install dependencies
-2. Open `GoldenPassport.xcworkspace` with Xcode to build
+1. Install the latest stable Xcode.
+2. Open `GoldenPassport.xcodeproj` with Xcode.
+3. Xcode will resolve the Swift package dependencies automatically, then build the `GoldenPassport` scheme.
 
 # Todo
 
@@ -64,3 +65,14 @@ GoldenPassport uses `cocoapods` as the package manager tool, you should install 
 - [google-authenticator](https://github.com/google/google-authenticator)
 - [WeatherBar](http://footle.org/WeatherBar/)
 - [swifter](https://github.com/httpswift/swifter)
+
+
+
+# Update
+
+2025.06.25 支持编辑，使用如下
+- 点击编辑按钮
+- 进入编辑模式
+- 修改URL、NAME等信息后保存
+- 关闭编辑模式
+![edit](screenshot/edit.png)
