@@ -17,6 +17,7 @@ final class DataManager {
     static let shared = DataManager()
     private let authDataFile = "gp.secrets"
     private let configFile = "config.plist"
+    private let authOrderKey = "auth_order"
 
     private var authData: [String: String]
     private var config: [String: String]
@@ -29,19 +30,25 @@ final class DataManager {
     }
 
     func addOTPAuthURL(tag: String, url: String) {
-        authData[normalizedTag(tag)] = normalizedURL(url)
+        let tag = normalizedTag(tag)
+        authData[tag] = normalizedURL(url)
+        appendAuthOrderIfNeeded(tag)
         saveData(authDataFile, data: authData)
+        saveConfigData()
     }
 
     func removeOTPAuthURL(tag: String) {
         authData.removeValue(forKey: tag)
+        saveAuthOrder(getAuthOrder().filter { $0 != tag })
         saveData(authDataFile, data: authData)
     }
 
     func updateOTPAuthURL(oldTag: String, newTag: String, newUrl: String) {
         if authData[oldTag] != nil {
+            let newTag = normalizedTag(newTag)
             authData.removeValue(forKey: oldTag)
-            authData[normalizedTag(newTag)] = normalizedURL(newUrl)
+            authData[newTag] = normalizedURL(newUrl)
+            saveAuthOrder(getAuthOrder().map { $0 == oldTag ? newTag : $0 })
             saveData(authDataFile, data: authData)
         }
     }
@@ -51,9 +58,27 @@ final class DataManager {
     }
 
     func allAuthEntries() -> [AuthEntry] {
-        return authData
-            .map { AuthEntry(tag: $0.key, url: $0.value) }
-            .sorted { $0.tag.localizedCaseInsensitiveCompare($1.tag) == .orderedAscending }
+        return resolvedAuthOrder().compactMap { tag in
+            guard let url = authData[tag] else {
+                return nil
+            }
+            return AuthEntry(tag: tag, url: url)
+        }
+    }
+
+    func moveAuthEntry(from sourceIndex: Int, to targetIndex: Int) {
+        var order = resolvedAuthOrder()
+        guard sourceIndex >= 0,
+              sourceIndex < order.count,
+              targetIndex >= 0,
+              targetIndex <= order.count else {
+            return
+        }
+
+        let tag = order.remove(at: sourceIndex)
+        let adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex
+        order.insert(tag, at: adjustedTargetIndex)
+        saveAuthOrder(order)
     }
 
     func verificationCode(for tag: String) -> String? {
@@ -122,7 +147,7 @@ final class DataManager {
 
     func saveConfig(key: String, value: String) {
         config[key] = value
-        saveData(configFile, data: config)
+        saveConfigData()
     }
 
     func importData(dist: URL) -> Int {
@@ -133,12 +158,15 @@ final class DataManager {
         let data = d as! [String: String]
         var count = 0;
         for k in data {
-            if authData[k.key] == nil {
-                authData[normalizedTag(k.key)] = normalizedURL(k.value)
+            let tag = normalizedTag(k.key)
+            if authData[tag] == nil {
+                authData[tag] = normalizedURL(k.value)
+                appendAuthOrderIfNeeded(tag)
                 count = count + 1
             }
         }
         saveData(authDataFile, data: authData)
+        saveConfigData()
         return count
     }
 
@@ -162,6 +190,51 @@ final class DataManager {
             return d as! [String: String]
         }
         return [:]
+    }
+
+    private func saveConfigData() {
+        saveData(configFile, data: config)
+    }
+
+    private func getAuthOrder() -> [String] {
+        return (config[authOrderKey] ?? "")
+            .components(separatedBy: "\n")
+            .filter { !$0.isEmpty }
+    }
+
+    private func saveAuthOrder(_ order: [String]) {
+        let existingTags = Set(authData.keys)
+        var seen = Set<String>()
+        let normalizedOrder = order.filter { tag in
+            guard existingTags.contains(tag), !seen.contains(tag) else {
+                return false
+            }
+            seen.insert(tag)
+            return true
+        }
+        config[authOrderKey] = normalizedOrder.joined(separator: "\n")
+        saveConfigData()
+    }
+
+    private func appendAuthOrderIfNeeded(_ tag: String) {
+        var order = getAuthOrder()
+        if !order.contains(tag) {
+            order.append(tag)
+            config[authOrderKey] = order.joined(separator: "\n")
+        }
+    }
+
+    private func resolvedAuthOrder() -> [String] {
+        let savedOrder = getAuthOrder()
+        let savedSet = Set(savedOrder)
+        let missingTags = authData.keys
+            .filter { !savedSet.contains($0) }
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+        let resolvedOrder = savedOrder.filter { authData[$0] != nil } + missingTags
+        if resolvedOrder != savedOrder {
+            saveAuthOrder(resolvedOrder)
+        }
+        return resolvedOrder
     }
 
     private var dataFilePath: String {

@@ -11,10 +11,8 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     private var selectedTag: String?
     private var formMode: FormMode = .viewing
     private var refreshTimer: Timer?
-    private var sortAscending = true
 
     private let tableView = NSTableView()
-    private let sortControl = NSSegmentedControl(labels: [L("main.sort_az"), L("main.sort_za")], trackingMode: .selectOne, target: nil, action: nil)
     private let nameField = NSTextField()
     private let urlField = NSTextField()
     private let codeLabel = NSTextField(labelWithString: "")
@@ -42,7 +40,6 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         window.minSize = NSSize(width: 820, height: 500)
         super.init(window: window)
         setupUI()
-        sortControl.selectedSegment = 0
         reloadData(selecting: nil)
     }
 
@@ -89,6 +86,38 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         selectedTag = entries[row].tag
         formMode = .viewing
         populateDetails(for: entries[row])
+    }
+
+    func tableView(_ tableView: NSTableView,
+                   pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+        guard row >= 0 && row < entries.count else {
+            return nil
+        }
+        return entries[row].tag as NSString
+    }
+
+    func tableView(_ tableView: NSTableView,
+                   validateDrop info: NSDraggingInfo,
+                   proposedRow row: Int,
+                   proposedDropOperation dropOperation: NSTableView.DropOperation) -> NSDragOperation {
+        tableView.setDropRow(row, dropOperation: .above)
+        return .move
+    }
+
+    func tableView(_ tableView: NSTableView,
+                   acceptDrop info: NSDraggingInfo,
+                   row: Int,
+                   dropOperation: NSTableView.DropOperation) -> Bool {
+        guard let draggedTag = info.draggingPasteboard.string(forType: .string),
+              let sourceIndex = entries.firstIndex(where: { $0.tag == draggedTag }) else {
+            return false
+        }
+
+        DataManager.shared.moveAuthEntry(from: sourceIndex, to: row)
+        selectedTag = draggedTag
+        reloadData(selecting: draggedTag)
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "VerifyKeyAdded"), object: nil)
+        return true
     }
 
     private func setupUI() {
@@ -199,21 +228,21 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         tableView.dataSource = self
         tableView.rowHeight = 30
         tableView.usesAlternatingRowBackgroundColors = true
+        tableView.registerForDraggedTypes([.string])
         scrollView.documentView = tableView
 
-        sortControl.target = self
-        sortControl.action = #selector(sortChanged)
-        sortControl.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(sortControl)
+        let hintLabel = NSTextField(labelWithString: L("main.drag_to_sort"))
+        hintLabel.textColor = .secondaryLabelColor
+        hintLabel.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(hintLabel)
 
         NSLayoutConstraint.activate([
             scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
             scrollView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
-            scrollView.topAnchor.constraint(equalTo: sortControl.bottomAnchor, constant: 8),
+            scrollView.topAnchor.constraint(equalTo: hintLabel.bottomAnchor, constant: 8),
             scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12),
-            sortControl.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
-            sortControl.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
-            sortControl.widthAnchor.constraint(equalToConstant: 160)
+            hintLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            hintLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 12)
         ])
 
         return container
@@ -336,9 +365,6 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     private func reloadData(selecting tag: String?) {
         entries = DataManager.shared.allAuthEntries()
-        if !sortAscending {
-            entries.reverse()
-        }
         tableView.reloadData()
 
         if let tag = tag, let index = entries.firstIndex(where: { $0.tag == tag }) {
@@ -505,11 +531,6 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         }
 
         nameField.stringValue = otpInfo.displayName
-    }
-
-    @objc private func sortChanged() {
-        sortAscending = sortControl.selectedSegment != 1
-        reloadData(selecting: selectedTag)
     }
 
     @objc private func importClicked() {
