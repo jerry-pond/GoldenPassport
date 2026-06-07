@@ -1,6 +1,7 @@
 import Cocoa
+import CoreImage
 
-final class MainWindowController: NSWindowController, NSTableViewDataSource, NSTableViewDelegate {
+final class MainWindowController: NSWindowController, NSTableViewDataSource, NSTableViewDelegate, NSTextViewDelegate {
     private enum FormMode {
         case viewing
         case adding
@@ -14,7 +15,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     private let tableView = NSTableView()
     private let nameField = NSTextField()
-    private let urlField = NSTextField()
+    private let urlTextView = NSTextView()
     private let codeLabel = NSTextField(labelWithString: "")
     private let expiryLabel = NSTextField(labelWithString: "")
     private let statusLabel = NSTextField(labelWithString: "")
@@ -22,22 +23,23 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     private let launchAtLoginButton = NSButton(checkboxWithTitle: L("menu.launch_at_login"), target: nil, action: nil)
     private let httpAutoStartButton = NSButton(checkboxWithTitle: L("menu.http.auto_start"), target: nil, action: nil)
 
-    private let addButton = NSButton(title: L("main.add"), target: nil, action: nil)
+    private let addButton = NSButton(title: "+", target: nil, action: nil)
+    private let deleteButton = NSButton(title: "-", target: nil, action: nil)
+    private let scanQRButton = NSButton(title: L("main.scan_qr"), target: nil, action: nil)
     private let editButton = NSButton(title: L("main.edit"), target: nil, action: nil)
-    private let deleteButton = NSButton(title: L("main.delete"), target: nil, action: nil)
     private let saveButton = NSButton(title: L("main.save"), target: nil, action: nil)
     private let cancelButton = NSButton(title: L("main.cancel"), target: nil, action: nil)
     private let copyButton = NSButton(title: L("main.copy_code"), target: nil, action: nil)
 
     init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 920, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: 940, height: 600),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.title = "GoldenPassport"
-        window.minSize = NSSize(width: 820, height: 500)
+        window.minSize = NSSize(width: 860, height: 540)
         super.init(window: window)
         setupUI()
         reloadData(selecting: nil)
@@ -88,8 +90,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         populateDetails(for: entries[row])
     }
 
-    func tableView(_ tableView: NSTableView,
-                   pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
         guard row >= 0 && row < entries.count else {
             return nil
         }
@@ -120,105 +121,81 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         return true
     }
 
+    func textDidEndEditing(_ notification: Notification) {
+        updateNameFromURLIfNeeded()
+    }
+
     private func setupUI() {
         guard let contentView = window?.contentView else {
             return
         }
 
-        let root = NSStackView()
-        root.orientation = .vertical
-        root.spacing = 0
-        root.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(root)
+        let tabView = NSTabView()
+        tabView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(tabView)
 
-        let toolbar = makeToolbar()
-        let body = makeBody()
+        let otpItem = NSTabViewItem(identifier: "otp")
+        otpItem.label = "OTP"
+        otpItem.view = makeOTPView()
+        tabView.addTabViewItem(otpItem)
 
-        root.addArrangedSubview(toolbar)
-        root.addArrangedSubview(body)
+        let settingsItem = NSTabViewItem(identifier: "settings")
+        settingsItem.label = L("main.settings")
+        settingsItem.view = makeSettingsView()
+        tabView.addTabViewItem(settingsItem)
 
         NSLayoutConstraint.activate([
-            root.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            root.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            root.topAnchor.constraint(equalTo: contentView.topAnchor),
-            root.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            toolbar.heightAnchor.constraint(equalToConstant: 52)
+            tabView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
+            tabView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            tabView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            tabView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
     }
 
-    private func makeToolbar() -> NSView {
+    private func makeOTPView() -> NSView {
         let container = NSView()
+        let split = NSSplitView()
+        split.isVertical = true
+        split.dividerStyle = .thin
+        split.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(split)
 
-        let stack = NSStackView()
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.spacing = 8
-        stack.edgeInsets = NSEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-
-        configureToolbarButton(addButton, action: #selector(addClicked))
-        configureToolbarButton(editButton, action: #selector(editClicked))
-        configureToolbarButton(deleteButton, action: #selector(deleteClicked))
-
-        let importButton = NSButton(title: L("main.import"), target: self, action: #selector(importClicked))
-        let exportButton = NSButton(title: L("main.export"), target: self, action: #selector(exportClicked))
-        let hideWindowButton = NSButton(title: L("main.hide_window"), target: self, action: #selector(hideWindowClicked))
-
-        [importButton, exportButton, hideWindowButton].forEach { button in
-            button.bezelStyle = .rounded
-        }
-
-        stack.addArrangedSubview(addButton)
-        stack.addArrangedSubview(editButton)
-        stack.addArrangedSubview(deleteButton)
-        stack.addArrangedSubview(NSView())
-        stack.addArrangedSubview(importButton)
-        stack.addArrangedSubview(exportButton)
-        stack.addArrangedSubview(hideWindowButton)
-
-        if let spacer = stack.arrangedSubviews.first(where: { type(of: $0) == NSView.self }) {
-            spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        }
+        let listPane = makeListPane()
+        let detailPane = makeDetailPane()
+        split.addArrangedSubview(listPane)
+        split.addArrangedSubview(detailPane)
 
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: container.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            split.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            split.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            split.topAnchor.constraint(equalTo: container.topAnchor),
+            split.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            listPane.widthAnchor.constraint(greaterThanOrEqualToConstant: 260),
+            detailPane.widthAnchor.constraint(greaterThanOrEqualToConstant: 520)
         ])
 
         return container
     }
 
-    private func configureToolbarButton(_ button: NSButton, action: Selector) {
-        button.target = self
-        button.action = action
-        button.bezelStyle = .rounded
-    }
-
-    private func makeBody() -> NSView {
-        let split = NSSplitView()
-        split.isVertical = true
-        split.dividerStyle = .thin
-
-        let listPane = makeListPane()
-        let detailsPane = makeDetailsPane()
-        split.addArrangedSubview(listPane)
-        split.addArrangedSubview(detailsPane)
-
-        listPane.widthAnchor.constraint(greaterThanOrEqualToConstant: 260).isActive = true
-        detailsPane.widthAnchor.constraint(greaterThanOrEqualToConstant: 520).isActive = true
-        return split
-    }
-
     private func makeListPane() -> NSView {
         let container = NSView()
-        let scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        container.addSubview(scrollView)
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.spacing = 8
+        stack.edgeInsets = NSEdgeInsets(top: 12, left: 12, bottom: 12, right: 10)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
 
+        let title = NSTextField(labelWithString: L("main.authenticators"))
+        title.font = NSFont.systemFont(ofSize: 14, weight: .semibold)
+        stack.addArrangedSubview(title)
+
+        let hintLabel = NSTextField(labelWithString: L("main.drag_to_sort"))
+        hintLabel.textColor = .secondaryLabelColor
+        stack.addArrangedSubview(hintLabel)
+
+        let scrollView = NSScrollView()
+        scrollView.hasVerticalScroller = true
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
         column.title = L("main.authenticators")
         column.width = 260
@@ -226,29 +203,48 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         tableView.headerView = nil
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.rowHeight = 30
+        tableView.rowHeight = 32
         tableView.usesAlternatingRowBackgroundColors = true
         tableView.registerForDraggedTypes([.string])
         scrollView.documentView = tableView
+        stack.addArrangedSubview(scrollView)
 
-        let hintLabel = NSTextField(labelWithString: L("main.drag_to_sort"))
-        hintLabel.textColor = .secondaryLabelColor
-        hintLabel.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(hintLabel)
+        let bottomBar = NSStackView()
+        bottomBar.orientation = .horizontal
+        bottomBar.spacing = 6
+        configureSmallButton(addButton, action: #selector(addClicked))
+        configureSmallButton(deleteButton, action: #selector(deleteClicked))
+        scanQRButton.target = self
+        scanQRButton.action = #selector(scanQRCodeClicked)
+        scanQRButton.bezelStyle = .rounded
+        bottomBar.addArrangedSubview(addButton)
+        bottomBar.addArrangedSubview(deleteButton)
+        bottomBar.addArrangedSubview(NSView())
+        bottomBar.addArrangedSubview(scanQRButton)
+        if let spacer = bottomBar.arrangedSubviews.first(where: { type(of: $0) == NSView.self }) {
+            spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        }
+        stack.addArrangedSubview(bottomBar)
 
         NSLayoutConstraint.activate([
-            scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
-            scrollView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
-            scrollView.topAnchor.constraint(equalTo: hintLabel.bottomAnchor, constant: 8),
-            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12),
-            hintLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
-            hintLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 12)
+            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: container.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            scrollView.heightAnchor.constraint(greaterThanOrEqualToConstant: 360)
         ])
 
         return container
     }
 
-    private func makeDetailsPane() -> NSView {
+    private func configureSmallButton(_ button: NSButton, action: Selector) {
+        button.target = self
+        button.action = action
+        button.bezelStyle = .rounded
+        button.widthAnchor.constraint(equalToConstant: 34).isActive = true
+    }
+
+    private func makeDetailPane() -> NSView {
         let container = NSView()
         let stack = NSStackView()
         stack.orientation = .vertical
@@ -259,42 +255,40 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         container.addSubview(stack)
 
         let title = NSTextField(labelWithString: L("main.details"))
-        title.font = NSFont.systemFont(ofSize: 17, weight: .semibold)
+        title.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
         stack.addArrangedSubview(title)
 
         stack.addArrangedSubview(makeLabeledField(label: L("main.name"), field: nameField))
-        stack.addArrangedSubview(makeLabeledField(label: L("main.otpauth_url"), field: urlField))
-        urlField.target = self
-        urlField.action = #selector(urlFieldChanged)
+        stack.addArrangedSubview(makeURLField())
 
-        codeLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 30, weight: .semibold)
+        codeLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 32, weight: .semibold)
         expiryLabel.textColor = .secondaryLabelColor
         statusLabel.textColor = .secondaryLabelColor
         statusLabel.lineBreakMode = .byWordWrapping
 
-        let codeStack = NSStackView(views: [codeLabel, copyButton])
+        let codeStack = NSStackView(views: [codeLabel, copyButton, editButton])
         codeStack.orientation = .horizontal
         codeStack.alignment = .centerY
-        codeStack.spacing = 12
+        codeStack.spacing = 10
         copyButton.target = self
         copyButton.action = #selector(copyCodeClicked)
         copyButton.bezelStyle = .rounded
+        editButton.target = self
+        editButton.action = #selector(editClicked)
+        editButton.bezelStyle = .rounded
         stack.addArrangedSubview(codeStack)
         stack.addArrangedSubview(expiryLabel)
 
-        let actionStack = NSStackView(views: [saveButton, cancelButton])
-        actionStack.orientation = .horizontal
-        actionStack.spacing = 8
+        let editActions = NSStackView(views: [saveButton, cancelButton])
+        editActions.orientation = .horizontal
+        editActions.spacing = 8
         saveButton.target = self
         saveButton.action = #selector(saveClicked)
         saveButton.bezelStyle = .rounded
         cancelButton.target = self
         cancelButton.action = #selector(cancelClicked)
         cancelButton.bezelStyle = .rounded
-        stack.addArrangedSubview(actionStack)
-
-        stack.addArrangedSubview(makeSeparator())
-        stack.addArrangedSubview(makeSettingsPane())
+        stack.addArrangedSubview(editActions)
         stack.addArrangedSubview(statusLabel)
 
         NSLayoutConstraint.activate([
@@ -302,8 +296,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
             stack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             stack.topAnchor.constraint(equalTo: container.topAnchor),
             stack.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor),
-            nameField.widthAnchor.constraint(greaterThanOrEqualToConstant: 420),
-            urlField.widthAnchor.constraint(greaterThanOrEqualToConstant: 420)
+            nameField.widthAnchor.constraint(greaterThanOrEqualToConstant: 440)
         ])
 
         return container
@@ -321,21 +314,63 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         return stack
     }
 
-    private func makeSeparator() -> NSBox {
-        let box = NSBox()
-        box.boxType = .separator
-        return box
-    }
-
-    private func makeSettingsPane() -> NSView {
+    private func makeURLField() -> NSView {
         let stack = NSStackView()
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 8
+        stack.spacing = 4
+
+        let labelField = NSTextField(labelWithString: L("main.otpauth_url"))
+        labelField.textColor = .secondaryLabelColor
+        stack.addArrangedSubview(labelField)
+
+        let scrollView = NSScrollView()
+        scrollView.hasVerticalScroller = true
+        scrollView.borderType = .bezelBorder
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        urlTextView.isRichText = false
+        urlTextView.isAutomaticQuoteSubstitutionEnabled = false
+        urlTextView.isAutomaticDashSubstitutionEnabled = false
+        urlTextView.textContainer?.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
+        urlTextView.textContainer?.widthTracksTextView = true
+        urlTextView.isHorizontallyResizable = false
+        urlTextView.isVerticallyResizable = true
+        urlTextView.autoresizingMask = [.width]
+        urlTextView.delegate = self
+        scrollView.documentView = urlTextView
+        stack.addArrangedSubview(scrollView)
+
+        NSLayoutConstraint.activate([
+            scrollView.widthAnchor.constraint(greaterThanOrEqualToConstant: 440),
+            scrollView.heightAnchor.constraint(equalToConstant: 112)
+        ])
+
+        return stack
+    }
+
+    private func makeSettingsView() -> NSView {
+        let container = NSView()
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 14
+        stack.edgeInsets = NSEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stack)
 
         let title = NSTextField(labelWithString: L("main.settings"))
-        title.font = NSFont.systemFont(ofSize: 14, weight: .semibold)
+        title.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
         stack.addArrangedSubview(title)
+
+        let importExportStack = NSStackView()
+        importExportStack.orientation = .horizontal
+        importExportStack.spacing = 8
+        let importButton = NSButton(title: L("main.import"), target: self, action: #selector(importClicked))
+        let exportButton = NSButton(title: L("main.export"), target: self, action: #selector(exportClicked))
+        [importButton, exportButton].forEach { $0.bezelStyle = .rounded }
+        importExportStack.addArrangedSubview(importButton)
+        importExportStack.addArrangedSubview(exportButton)
+        stack.addArrangedSubview(importExportStack)
 
         let portStack = NSStackView()
         portStack.orientation = .horizontal
@@ -360,7 +395,16 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         httpAutoStartButton.state = DataManager.shared.getHttpServerAutoStart() ? .on : .off
         stack.addArrangedSubview(httpAutoStartButton)
 
-        return stack
+        stack.addArrangedSubview(statusLabel)
+
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: container.topAnchor),
+            stack.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor)
+        ])
+
+        return container
     }
 
     private func reloadData(selecting tag: String?) {
@@ -382,36 +426,39 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     private func populateDetails(for entry: AuthEntry) {
         nameField.stringValue = entry.tag
-        urlField.stringValue = entry.url
+        urlTextView.string = entry.url
         updateCode()
         setFormEnabled(false)
         saveButton.isHidden = true
         cancelButton.isHidden = true
+        editButton.isHidden = false
         editButton.isEnabled = true
         deleteButton.isEnabled = true
         copyButton.isEnabled = true
+        scanQRButton.isEnabled = false
         statusLabel.stringValue = ""
     }
 
     private func showEmptyState() {
         nameField.stringValue = ""
-        urlField.stringValue = ""
+        urlTextView.string = ""
         codeLabel.stringValue = "--"
         expiryLabel.stringValue = L("main.no_selection")
         statusLabel.stringValue = ""
         setFormEnabled(false)
         saveButton.isHidden = true
         cancelButton.isHidden = true
-        editButton.isEnabled = false
+        editButton.isHidden = true
         deleteButton.isEnabled = false
         copyButton.isEnabled = false
+        scanQRButton.isEnabled = false
     }
 
     private func setFormEnabled(_ enabled: Bool) {
         nameField.isEditable = enabled
-        urlField.isEditable = enabled
         nameField.isSelectable = true
-        urlField.isSelectable = true
+        urlTextView.isEditable = enabled
+        urlTextView.isSelectable = true
     }
 
     private func updateCode() {
@@ -438,14 +485,16 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         selectedTag = nil
         tableView.deselectAll(nil)
         nameField.stringValue = ""
-        urlField.stringValue = ""
+        urlTextView.string = ""
         codeLabel.stringValue = "--"
         expiryLabel.stringValue = L("main.adding")
         statusLabel.stringValue = ""
         setFormEnabled(true)
         saveButton.isHidden = false
         cancelButton.isHidden = false
+        editButton.isHidden = true
         copyButton.isEnabled = false
+        scanQRButton.isEnabled = true
         nameField.becomeFirstResponder()
     }
 
@@ -457,6 +506,8 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         setFormEnabled(true)
         saveButton.isHidden = false
         cancelButton.isHidden = false
+        editButton.isHidden = true
+        scanQRButton.isEnabled = true
         nameField.becomeFirstResponder()
     }
 
@@ -479,8 +530,8 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     @objc private func saveClicked() {
         let tag = nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let url = urlField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        urlField.stringValue = url
+        let url = urlTextView.string.trimmingCharacters(in: .whitespacesAndNewlines)
+        urlTextView.string = url
 
         guard !tag.isEmpty else {
             statusLabel.stringValue = L("main.name.required")
@@ -520,12 +571,34 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         statusLabel.stringValue = L("main.copied")
     }
 
-    @objc private func urlFieldChanged() {
-        let url = urlField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        urlField.stringValue = url
+    @objc private func scanQRCodeClicked() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedFileTypes = NSImage.imageTypes
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseDirectories = false
+        openPanel.canCreateDirectories = false
+        openPanel.canChooseFiles = true
 
-        guard formMode == .adding,
-              nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+        guard openPanel.runModal() == .OK,
+              let url = openPanel.url,
+              let ciImage = CIImage(contentsOf: url),
+              let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyLow]),
+              let result = detector.features(in: ciImage).last as? CIQRCodeFeature,
+              let message = result.messageString else {
+            statusLabel.stringValue = L("main.scan_failed")
+            return
+        }
+
+        urlTextView.string = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        updateNameFromURLIfNeeded(force: true)
+    }
+
+    private func updateNameFromURLIfNeeded(force: Bool = false) {
+        let url = urlTextView.string.trimmingCharacters(in: .whitespacesAndNewlines)
+        urlTextView.string = url
+
+        guard (force || formMode == .adding),
+              (force || nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty),
               let otpInfo = OTPAuthURLParser(url) else {
             return
         }
@@ -580,9 +653,5 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     @objc private func toggleHttpAutoStart() {
         DataManager.shared.saveHttpServerAutoStart(auto: httpAutoStartButton.state == .on)
-    }
-
-    @objc private func hideWindowClicked() {
-        window?.orderOut(nil)
     }
 }

@@ -50,6 +50,7 @@
 "main.save" = "保存";
 "main.cancel" = "取消";
 "main.copy_code" = "复制验证码";
+"main.scan_qr" = "扫描二维码...";
 "main.import" = "导入";
 "main.export" = "导出";
 "main.hide_window" = "隐藏窗口";
@@ -62,3 +63,4 @@
 "main.name.required" = "名称不能为空。";
 "main.copied" = "验证码已复制。";
 "main.drag_to_sort" = "拖拽条目来自定义顺序";
+"main.scan_failed" = "无法从此图片识别 OTPAuth 二维码。";

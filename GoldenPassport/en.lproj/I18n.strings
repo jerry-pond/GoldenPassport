@@ -50,6 +50,7 @@
 "main.save" = "Save";
 "main.cancel" = "Cancel";
 "main.copy_code" = "Copy Code";
+"main.scan_qr" = "Scan QR...";
 "main.import" = "Import";
 "main.export" = "Export";
 "main.hide_window" = "Hide Window";
@@ -62,3 +63,4 @@
 "main.name.required" = "Name is required.";
 "main.copied" = "Verification code copied.";
 "main.drag_to_sort" = "Drag items to customize order";
+"main.scan_failed" = "Unable to recognize an OTPAuth QR code from this image.";
