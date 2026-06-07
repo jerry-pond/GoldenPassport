@@ -1,78 +1,106 @@
 # GoldenPassport
 
-A native implementation of Google Authenticator for Mac based on Swift3.
+GoldenPassport is a native macOS authenticator app for managing OTPAuth / Google Authenticator verification codes.
 
-# Screenshot
+This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport). This fork keeps the original menu bar workflow, adds an edit mode for existing authenticators, and updates the project to build with Xcode and Swift Package Manager.
+
+## Screenshots
 
 ![main](screenshot/main.png)
 
 ![add](screenshot/add-window.png)
 
+![edit](screenshot/edit.png)
+
 ![restful-api](screenshot/restful-api.png)
 
-# Features
+## Features
 
-- Recognize OTPAuth URL from a QRCode image
-- Authentication code management
-- Support RESTful API to obtain the verification code
-- Use a global hot key(`Shift+Cmd+[0-9]`) to direct fill out the verification code
-- Click an auth-menu to copy the verification code to the `PasteBoard`
-- Export/Import authentication codes
+- Recognize OTPAuth URLs from QR code images
+- Manage authentication codes from the macOS menu bar
+- Edit existing authentication entries, including name and OTPAuth URL
+- Copy verification codes from the status menu
+- Fill verification codes with global hotkeys: `Shift+Cmd+[0-9]`
+- Export and import authentication codes
+- Provide a local REST API for reading verification codes from scripts
 
-# How to use
+## Download
 
-1. Download the latest version of GoldenPassport from the [releases](https://github.com/stanzhai/GoldenPassport/releases) page.
-2. Unzip `GoldenPassport.zip` and put `GoldenPassport.app` to your `Application` folder then start it. 
-3. Add an auth URL from the status menu.
+Download the latest build from this fork's [GitHub Releases](https://github.com/jerry-pond/GoldenPassport/releases) page.
 
-Or you can install if from brew cask
+The current release provides separate unsigned builds for:
 
+- Apple Silicon: `GoldenPassport-arm64-unsigned.zip`
+- Intel Mac: `GoldenPassport-x86_64-unsigned.zip`
+
+Unzip the package for your Mac, then move `GoldenPassport.app` to `/Applications`.
+
+The release packages are ad-hoc signed and do not use an Apple Developer ID. On first launch, macOS may require opening the app from Finder with right click > Open, or allowing it in System Settings > Privacy & Security.
+
+## Usage
+
+1. Start `GoldenPassport.app`.
+2. Add an OTPAuth URL from the status menu, or import existing data.
+3. Click an auth menu item to copy the current verification code.
+4. Use `Shift+Cmd+[0-9]` to fill a verification code directly.
+
+### Edit Mode
+
+This fork adds edit mode for existing authentication entries:
+
+1. Click the `编辑` menu item.
+2. Choose the authentication entry you want to edit from the status menu.
+3. Update the name or OTPAuth URL, then save.
+4. Click `完成编辑` to leave edit mode.
+
+## REST API
+
+GoldenPassport can expose verification codes through a local HTTP API:
+
+```bash
+# You can inspect available routes from http://localhost:17304/
+code=$(curl 'http://localhost:17304/code/test@example.com')
+echo "$code"
 ```
-brew install --cask goldenpassport
-```
 
-Now, you can get the verification code by:
+## Building
 
-- From the status menu, copy the verification by clicking an auth-menu 
-- Use a global hot key(`Shift+Cmd+[0-9]`) to direct fill out the verification code
-
-You can also use the RESTful API if you want to get the verification code from a shell script by the following way:
-
-```
-# you can get the url from `http://localhost:17304/`
-code=$(curl 'http://localhost:17304/code/test@stanzhai.site')
-# ues the verification code
-echo $code
-```
-
-# Building
-
-GoldenPassport uses Swift Package Manager for dependencies.
+This fork uses Swift Package Manager for dependencies. CocoaPods is no longer required.
 
 1. Install the latest stable Xcode.
 2. Open `GoldenPassport.xcodeproj` with Xcode.
-3. Xcode will resolve the Swift package dependencies automatically, then build the `GoldenPassport` scheme.
+3. Let Xcode resolve Swift Package dependencies.
+4. Build the `GoldenPassport` scheme.
 
-# Todo
+Command-line build example:
 
-- Support auto startup with system
-- i18n
+```bash
+xcodebuild \
+  -project GoldenPassport.xcodeproj \
+  -scheme GoldenPassport \
+  -configuration Release \
+  -destination 'platform=macOS' \
+  build
+```
 
-# Resources
+## Changes In This Fork
 
+- Forked from [stanzhai/GoldenPassport](https://github.com/stanzhai/GoldenPassport)
+- Added edit mode for existing authentication entries
+- Added edit icon assets and menu state handling
+- Migrated dependency management from CocoaPods to Swift Package Manager
+- Added `Package.resolved` to lock SwiftPM dependency resolution
+- Updated build and release packaging for separate `arm64` and `x86_64` macOS apps
+
+## Resources
+
+- [Original GoldenPassport repository](https://github.com/stanzhai/GoldenPassport)
 - [Swift Resources](https://developer.apple.com/swift/resources/)
-- [macOS Development Tutorials](https://www.raywenderlich.com/category/macos)
+- [Swift Package Manager](https://www.swift.org/package-manager/)
 - [google-authenticator](https://github.com/google/google-authenticator)
-- [WeatherBar](http://footle.org/WeatherBar/)
 - [swifter](https://github.com/httpswift/swifter)
 
+## Todo
 
-
-# Update
-
-2025.06.25 支持编辑，使用如下
-- 点击编辑按钮
-- 进入编辑模式
-- 修改URL、NAME等信息后保存
-- 关闭编辑模式
-![edit](screenshot/edit.png)
+- Support auto startup with system
+- Improve i18n
