@@ -10,39 +10,22 @@ import Cocoa
 import Swifter
 
 class StatusMenuController: NSObject {
-    var addVerifyKeyWindow: AddVerifyKeyWindow!
-    var httpPortConfigWindow: HTTPPortConfigWindow!
-
     @IBOutlet weak var statusMenu: NSMenu!
-    @IBOutlet weak var addMenuItem: NSMenuItem!
-    @IBOutlet weak var deleteMenuItem: NSMenuItem!
-    @IBOutlet weak var importMenuItem: NSMenuItem!
-    @IBOutlet weak var exportMenuItem: NSMenuItem!
     @IBOutlet weak var httpUrlMenuItem: NSMenuItem!
-    @IBOutlet weak var httpServerSwitch: NSMenuItem!
-    @IBOutlet weak var enableAutoStart: NSMenuItem!
-    var launchAtLoginMenuItem: NSMenuItem!
     
     var statusItem: NSStatusItem!
     var timerMenuItem: NSMenuItem!
+    var httpServerSwitchMenuItem: NSMenuItem!
     var authCodeMenuItems: [NSMenuItem] = []
 
     var statusIcon: NSImage!
     var copyIcon: NSImage!
-    var removeIcon: NSImage!
-    var editIcon: NSImage!
 
-    var markDeleteVerifiedKey: Bool = false
-    var markEditVerifiedKey: Bool = false
     var needRefreshCodeMenus: Bool = true
-    var editMenuItem: NSMenuItem!
     let authCodeMenuItemTagStartIndex = 100
     var http: HttpServer!
 
     override func awakeFromNib() {
-        addVerifyKeyWindow = AddVerifyKeyWindow()
-        httpPortConfigWindow = HTTPPortConfigWindow()
-
         loadIcons()
         initStatusItem()
         initStatusMenuItems()
@@ -69,16 +52,6 @@ class StatusMenuController: NSObject {
         copyIcon = NSImage(named: "copyIcon")
         copyIcon.size = iconSize
         copyIcon.isTemplate = true
-
-        removeIcon = NSImage(named: "removeIcon")
-        removeIcon.size = iconSize
-        removeIcon.isTemplate = true
-
-        editIcon = NSImage(named: "editIcon")
-        if editIcon != nil {
-            editIcon.size = iconSize
-            editIcon.isTemplate = true
-        }
     }
 
     private func initStatusItem() {
@@ -90,40 +63,27 @@ class StatusMenuController: NSObject {
 
     private func initStatusMenuItems() {
         statusMenu.insertItem(NSMenuItem.separator(), at: 0)
-        let openMainWindowItem = NSMenuItem(title: L("main.open_window"), action: #selector(openMainWindowClicked), keyEquivalent: "o")
+        let openMainWindowItem = NSMenuItem(title: L("main.open_window"), action: #selector(openMainWindowClicked), keyEquivalent: "")
         openMainWindowItem.target = self
         statusMenu.insertItem(openMainWindowItem, at: 0)
 
+        httpServerSwitchMenuItem = NSMenuItem(title: L("http.start"), action: #selector(switchHttpServerClicked), keyEquivalent: "")
+        httpServerSwitchMenuItem.target = self
+        statusMenu.insertItem(httpServerSwitchMenuItem, at: 1)
+
         timerMenuItem = NSMenuItem()
         statusMenu.insertItem(timerMenuItem, at: 0)
-        enableAutoStart.state = NSControl.StateValue(rawValue: DataManager.shared.getHttpServerAutoStart() ? 1 : 0)
-        enableAutoStart.title = L("menu.http.auto_start")
-
-        editMenuItem = NSMenuItem(title: L("menu.edit"), action: #selector(editClicked), keyEquivalent: "e")
-        editMenuItem.target = self
-        if let deleteIndex = statusMenu.items.firstIndex(of: deleteMenuItem) {
-            statusMenu.insertItem(editMenuItem, at: deleteIndex + 1)
-        } else {
-            statusMenu.insertItem(editMenuItem, at: 3)
-        }
-
-        launchAtLoginMenuItem = NSMenuItem(title: L("menu.launch_at_login"), action: #selector(launchAtLoginClicked), keyEquivalent: "")
-        launchAtLoginMenuItem.target = self
-        launchAtLoginMenuItem.state = NSControl.StateValue(rawValue: LoginItemManager.shared.isEnabled ? 1 : 0)
-        if let httpSectionIndex = statusMenu.items.firstIndex(of: httpServerSwitch) {
-            statusMenu.insertItem(launchAtLoginMenuItem, at: httpSectionIndex)
-        }
     }
 
     @objc func openMenu(_ sender: AnyObject?) {
         updateMenu()
+        updateHttpSwitchMenuItem()
         updateHttpURLMenuItem()
         let runLoop = RunLoop.current
         let timer = Timer(timeInterval: TimeInterval(1), target: self, selector: #selector(updateMenu), userInfo: nil, repeats: true)
         runLoop.add(timer, forMode: RunLoop.Mode.eventTracking)
         statusItem.popUpMenu(statusMenu)
         timer.invalidate()
-        updateHttpSwitchMenuItem()
     }
 
     @objc func updateMenu() {
@@ -171,16 +131,8 @@ class StatusMenuController: NSObject {
     }
 
     private func updateAuthCodeMenuItemState(_ authCodeMenuItem: NSMenuItem) {
-        if markDeleteVerifiedKey {
-            authCodeMenuItem.toolTip = DELETE_VERIFY_KEY_STR
-            authCodeMenuItem.image = removeIcon
-        } else if markEditVerifiedKey {
-            authCodeMenuItem.toolTip = L("status.edit_key.tooltip")
-            authCodeMenuItem.image = editIcon
-        } else {
-            authCodeMenuItem.toolTip = COPY_AUTH_CODE_STR
-            authCodeMenuItem.image = copyIcon
-        }
+        authCodeMenuItem.toolTip = COPY_AUTH_CODE_STR
+        authCodeMenuItem.image = copyIcon
     }
 
     @objc func authCodeMenuItemClicked(_ sender: NSMenuItem) {
@@ -190,24 +142,9 @@ class StatusMenuController: NSObject {
             var idx = 0
             for codeInfo in authCodes {
                 if idx == dataIdx {
-                    if markDeleteVerifiedKey {
-                        DataManager.shared.removeOTPAuthURL(tag: codeInfo.key)
-                        needRefreshCodeMenus = true
-                        updateMenu()
-                    } else if markEditVerifiedKey {
-                        let url = DataManager.shared.getOTPAuthURL(for: codeInfo.key)
-                        addVerifyKeyWindow.showWindow(nil)
-                        addVerifyKeyWindow.window?.makeKeyAndOrderFront(nil)
-                        addVerifyKeyWindow.tagTextField.stringValue = codeInfo.key
-                        addVerifyKeyWindow.otpTextField.stringValue = url ?? ""
-                        addVerifyKeyWindow.originalTag = codeInfo.key
-                        addVerifyKeyWindow.isEditing = true
-                        NSApp.activate(ignoringOtherApps: true)
-                    } else {
-                        let pasteboard = NSPasteboard.general
-                        pasteboard.clearContents()
-                        pasteboard.setString(codeInfo.value, forType: .string)
-                    }
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    pasteboard.setString(codeInfo.value, forType: .string)
                     break
                 }
                 idx = idx + 1
@@ -224,13 +161,14 @@ class StatusMenuController: NSObject {
         if (http != nil && http.state == HttpServerIO.HttpServerIOState.running) {
             restartHttpServer()
         }
+        updateHttpSwitchMenuItem()
     }
     
     private func updateHttpSwitchMenuItem() {
         if (http == nil || http.state != HttpServerIO.HttpServerIOState.running) {
-            httpServerSwitch.title = L("http.start")
+            httpServerSwitchMenuItem.title = L("http.start")
         } else {
-            httpServerSwitch.title = L("http.stop")
+            httpServerSwitchMenuItem.title = L("http.stop")
         }
     }
 
@@ -281,126 +219,20 @@ class StatusMenuController: NSObject {
         startHttpServer()
     }
 
-    @IBAction func addVerifyClicked(_ sender: NSMenuItem) {
-        addVerifyKeyWindow.showWindow(nil)
-        addVerifyKeyWindow.window?.makeKeyAndOrderFront(nil)
-        addVerifyKeyWindow.clearTextField()
-        NSApp.activate(ignoringOtherApps: true)
-    }
-
-    @IBAction func deleteClicked(_ sender: NSMenuItem) {
-        markDeleteVerifiedKey = !markDeleteVerifiedKey
-        markEditVerifiedKey = false
-        editMenuItem.title = L("menu.edit")
-
-        deleteMenuItem.title = markDeleteVerifiedKey ? DONE_REMOVE_STR : REMOVE_STR
-
-        for authCodeMenuItem in authCodeMenuItems {
-            updateAuthCodeMenuItemState(authCodeMenuItem)
-        }
-
-        if markDeleteVerifiedKey {
-            let alert: NSAlert = NSAlert()
-            alert.messageText = LF("delete.mode.message", DONE_REMOVE_STR)
-            alert.addButton(withTitle: L("common.ok"))
-            alert.alertStyle = NSAlert.Style.informational
-            alert.runModal()
-        }
-    }
-
-    @IBAction func editClicked(_ sender: NSMenuItem) {
-        markEditVerifiedKey = !markEditVerifiedKey
-        markDeleteVerifiedKey = false
-        deleteMenuItem.title = L("menu.delete")
-
-        editMenuItem.title = markEditVerifiedKey ? L("menu.edit.done") : L("menu.edit")
-
-        for authCodeMenuItem in authCodeMenuItems {
-            updateAuthCodeMenuItemState(authCodeMenuItem)
-        }
-
-        if markEditVerifiedKey {
-            let alert: NSAlert = NSAlert()
-            alert.messageText = LF("edit.mode.message", L("menu.edit.done"))
-            alert.addButton(withTitle: L("common.ok"))
-            alert.alertStyle = NSAlert.Style.informational
-            alert.runModal()
-        }
-    }
-
-    @IBAction func importClicked(_ sender: NSMenuItem) {
-        let openPanel = NSOpenPanel()
-        openPanel.allowedFileTypes = ["secrets"]
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseDirectories = false
-        openPanel.canCreateDirectories = false
-        openPanel.canChooseFiles = true
-
-        let i = openPanel.runModal()
-        if i == NSApplication.ModalResponse.cancel {
-            return
-        }
-        let count = DataManager.shared.importData(dist: openPanel.url!)
-        needRefreshCodeMenus = true
-        let alert = NSAlert()
-        alert.messageText = LF("import.success", count)
-        alert.runModal()
-    }
-    
-    @IBAction func exportClicked(_ sender: NSMenuItem) {
-        let savePanel = NSSavePanel()
-        savePanel.title = L("export.title")
-        savePanel.nameFieldStringValue = "GoldenPassport.secrets"
-        let i = savePanel.runModal()
-        if i == NSApplication.ModalResponse.cancel {
-            return
-        }
-        DataManager.shared.exportData(dist: savePanel.url!)
-    }
-    
-    @IBAction func configHttpPortClicked(_ sender: NSMenuItem) {
-        httpPortConfigWindow.showWindow(nil)
-        httpPortConfigWindow.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-    }
-    
-    @IBAction func switchClicked(_ sender: Any) {
+    @IBAction func switchHttpServerClicked(_ sender: Any) {
         if (http == nil || http.state != HttpServerIO.HttpServerIOState.running) {
             startHttpServer()
         } else {
             stopHttpServer()
         }
+        updateHttpSwitchMenuItem()
+        updateHttpURLMenuItem()
     }
-    
+
     @IBAction func urlClicked(_ sender: NSMenuItem) {
         let serverPort = DataManager.shared.getHttpServerPort()
         if let url = URL(string: "http://localhost:\(serverPort)") {
             NSWorkspace.shared.open(url)
-        }
-    }
-    
-    @IBAction func enableAutoStartClicked(_ sender: Any) {
-        if enableAutoStart.state.rawValue == 1 {
-            enableAutoStart.state = NSControl.StateValue(rawValue: 0)
-            DataManager.shared.saveHttpServerAutoStart(auto: false)
-        } else {
-            enableAutoStart.state = NSControl.StateValue(rawValue: 1)
-            DataManager.shared.saveHttpServerAutoStart(auto: true)
-        }
-    }
-
-    @IBAction func launchAtLoginClicked(_ sender: NSMenuItem) {
-        let shouldEnable = sender.state.rawValue != 1
-
-        do {
-            try LoginItemManager.shared.setEnabled(shouldEnable)
-            sender.state = NSControl.StateValue(rawValue: shouldEnable ? 1 : 0)
-        } catch {
-            let alert = NSAlert()
-            alert.messageText = LF("launch_at_login.failed", "\(error)")
-            alert.addButton(withTitle: L("common.ok"))
-            alert.alertStyle = NSAlert.Style.warning
-            alert.runModal()
         }
     }
 

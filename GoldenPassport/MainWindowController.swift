@@ -12,13 +12,16 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     private var selectedTag: String?
     private var formMode: FormMode = .viewing
     private var refreshTimer: Timer?
+    private var detailContentViews: [NSView] = []
 
     private let tableView = NSTableView()
     private let nameField = NSTextField()
     private let urlTextView = NSTextView()
     private let codeLabel = NSTextField(labelWithString: "")
     private let expiryLabel = NSTextField(labelWithString: "")
-    private let statusLabel = NSTextField(labelWithString: "")
+    private let emptyDetailLabel = NSTextField(labelWithString: L("main.no_selection"))
+    private let detailStatusLabel = NSTextField(labelWithString: "")
+    private let settingsStatusLabel = NSTextField(labelWithString: "")
     private let httpPortField = NSTextField()
     private let launchAtLoginButton = NSButton(checkboxWithTitle: L("menu.launch_at_login"), target: nil, action: nil)
     private let httpAutoStartButton = NSButton(checkboxWithTitle: L("menu.http.auto_start"), target: nil, action: nil)
@@ -123,6 +126,11 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
 
     func textDidEndEditing(_ notification: Notification) {
         updateNameFromURLIfNeeded()
+        updateCode()
+    }
+
+    func textDidChange(_ notification: Notification) {
+        updateCode()
     }
 
     private func setupUI() {
@@ -133,6 +141,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         let tabView = NSTabView()
         tabView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabView)
+        installTextEditingMenuIfNeeded()
 
         let otpItem = NSTabViewItem(identifier: "otp")
         otpItem.label = "OTP"
@@ -150,6 +159,29 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
             tabView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             tabView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
+    }
+
+    private func installTextEditingMenuIfNeeded() {
+        let mainMenu = NSApp.mainMenu ?? NSMenu()
+        if NSApp.mainMenu == nil {
+            NSApp.mainMenu = mainMenu
+        }
+
+        if mainMenu.items.contains(where: { $0.submenu?.items.contains(where: { $0.action == #selector(NSText.copy(_:)) }) == true }) {
+            return
+        }
+
+        let editMenuItem = NSMenuItem(title: L("menu.edit"), action: nil, keyEquivalent: "")
+        let editMenu = NSMenu(title: L("menu.edit"))
+        editMenuItem.submenu = editMenu
+
+        editMenu.addItem(NSMenuItem(title: L("menu.cut"), action: #selector(NSText.cut(_:)), keyEquivalent: "x"))
+        editMenu.addItem(NSMenuItem(title: L("menu.copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c"))
+        editMenu.addItem(NSMenuItem(title: L("menu.paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v"))
+        editMenu.addItem(NSMenuItem.separator())
+        editMenu.addItem(NSMenuItem(title: L("menu.select_all"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a"))
+
+        mainMenu.insertItem(editMenuItem, at: min(1, mainMenu.items.count))
     }
 
     private func makeOTPView() -> NSView {
@@ -258,13 +290,19 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         title.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
         stack.addArrangedSubview(title)
 
-        stack.addArrangedSubview(makeLabeledField(label: L("main.name"), field: nameField))
-        stack.addArrangedSubview(makeURLField())
+        emptyDetailLabel.textColor = .secondaryLabelColor
+        emptyDetailLabel.lineBreakMode = .byWordWrapping
+        stack.addArrangedSubview(emptyDetailLabel)
+
+        let nameView = makeLabeledField(label: L("main.name"), field: nameField)
+        let urlView = makeURLField()
+        stack.addArrangedSubview(nameView)
+        stack.addArrangedSubview(urlView)
 
         codeLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 32, weight: .semibold)
         expiryLabel.textColor = .secondaryLabelColor
-        statusLabel.textColor = .secondaryLabelColor
-        statusLabel.lineBreakMode = .byWordWrapping
+        detailStatusLabel.textColor = .secondaryLabelColor
+        detailStatusLabel.lineBreakMode = .byWordWrapping
 
         let codeStack = NSStackView(views: [codeLabel, copyButton, editButton])
         codeStack.orientation = .horizontal
@@ -289,7 +327,8 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         cancelButton.action = #selector(cancelClicked)
         cancelButton.bezelStyle = .rounded
         stack.addArrangedSubview(editActions)
-        stack.addArrangedSubview(statusLabel)
+        stack.addArrangedSubview(detailStatusLabel)
+        detailContentViews = [nameView, urlView, codeStack, expiryLabel, editActions, detailStatusLabel]
 
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -309,6 +348,10 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         stack.spacing = 4
         let labelField = NSTextField(labelWithString: label)
         labelField.textColor = .secondaryLabelColor
+        field.focusRingType = .default
+        field.isEditable = true
+        field.isSelectable = true
+        field.usesSingleLineMode = true
         stack.addArrangedSubview(labelField)
         stack.addArrangedSubview(field)
         return stack
@@ -336,6 +379,9 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         urlTextView.isHorizontallyResizable = false
         urlTextView.isVerticallyResizable = true
         urlTextView.autoresizingMask = [.width]
+        urlTextView.allowsUndo = true
+        urlTextView.isEditable = true
+        urlTextView.isSelectable = true
         urlTextView.delegate = self
         scrollView.documentView = urlTextView
         stack.addArrangedSubview(scrollView)
@@ -395,7 +441,9 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         httpAutoStartButton.state = DataManager.shared.getHttpServerAutoStart() ? .on : .off
         stack.addArrangedSubview(httpAutoStartButton)
 
-        stack.addArrangedSubview(statusLabel)
+        settingsStatusLabel.textColor = .secondaryLabelColor
+        settingsStatusLabel.lineBreakMode = .byWordWrapping
+        stack.addArrangedSubview(settingsStatusLabel)
 
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -414,17 +462,15 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         if let tag = tag, let index = entries.firstIndex(where: { $0.tag == tag }) {
             tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             populateDetails(for: entries[index])
-        } else if !entries.isEmpty {
-            tableView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
-            selectedTag = entries[0].tag
-            populateDetails(for: entries[0])
         } else {
+            tableView.deselectAll(nil)
             selectedTag = nil
             showEmptyState()
         }
     }
 
     private func populateDetails(for entry: AuthEntry) {
+        showDetailContent(true)
         nameField.stringValue = entry.tag
         urlTextView.string = entry.url
         updateCode()
@@ -435,23 +481,31 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         editButton.isEnabled = true
         deleteButton.isEnabled = true
         copyButton.isEnabled = true
-        scanQRButton.isEnabled = false
-        statusLabel.stringValue = ""
+        scanQRButton.isEnabled = true
+        detailStatusLabel.stringValue = ""
     }
 
     private func showEmptyState() {
+        formMode = .viewing
+        emptyDetailLabel.stringValue = L("main.no_selection")
+        showDetailContent(false)
         nameField.stringValue = ""
         urlTextView.string = ""
-        codeLabel.stringValue = "--"
-        expiryLabel.stringValue = L("main.no_selection")
-        statusLabel.stringValue = ""
+        codeLabel.stringValue = ""
+        expiryLabel.stringValue = ""
+        detailStatusLabel.stringValue = ""
         setFormEnabled(false)
         saveButton.isHidden = true
         cancelButton.isHidden = true
         editButton.isHidden = true
         deleteButton.isEnabled = false
         copyButton.isEnabled = false
-        scanQRButton.isEnabled = false
+        scanQRButton.isEnabled = true
+    }
+
+    private func showDetailContent(_ visible: Bool) {
+        emptyDetailLabel.isHidden = visible
+        detailContentViews.forEach { $0.isHidden = !visible }
     }
 
     private func setFormEnabled(_ enabled: Bool) {
@@ -462,15 +516,32 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     }
 
     private func updateCode() {
-        guard let tag = selectedTag, let code = DataManager.shared.verificationCode(for: tag) else {
+        let code: String?
+
+        switch formMode {
+        case .viewing:
+            guard let tag = selectedTag else {
+                codeLabel.stringValue = ""
+                expiryLabel.stringValue = ""
+                copyButton.isEnabled = false
+                return
+            }
+            code = DataManager.shared.verificationCode(for: tag)
+        case .adding, .editing:
+            code = DataManager.shared.verificationCode(forOTPAuthURL: urlTextView.string)
+        }
+
+        guard let code = code else {
             codeLabel.stringValue = "--"
-            expiryLabel.stringValue = L("main.invalid_code")
+            expiryLabel.stringValue = L("auth.invalid_url")
+            copyButton.isEnabled = false
             return
         }
 
         let second = 30 - Calendar(identifier: .gregorian).component(.second, from: Date()) % 30
         codeLabel.stringValue = code
         expiryLabel.stringValue = "\(EXPIRE_TIME_STR)\(second)s"
+        copyButton.isEnabled = true
     }
 
     private func startRefreshTimer() {
@@ -484,17 +555,17 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         formMode = .adding
         selectedTag = nil
         tableView.deselectAll(nil)
+        showDetailContent(true)
         nameField.stringValue = ""
         urlTextView.string = ""
-        codeLabel.stringValue = "--"
-        expiryLabel.stringValue = L("main.adding")
-        statusLabel.stringValue = ""
+        detailStatusLabel.stringValue = ""
         setFormEnabled(true)
         saveButton.isHidden = false
         cancelButton.isHidden = false
         editButton.isHidden = true
-        copyButton.isEnabled = false
+        deleteButton.isEnabled = false
         scanQRButton.isEnabled = true
+        updateCode()
         nameField.becomeFirstResponder()
     }
 
@@ -508,6 +579,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         cancelButton.isHidden = false
         editButton.isHidden = true
         scanQRButton.isEnabled = true
+        updateCode()
         nameField.becomeFirstResponder()
     }
 
@@ -534,11 +606,11 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
         urlTextView.string = url
 
         guard !tag.isEmpty else {
-            statusLabel.stringValue = L("main.name.required")
+            detailStatusLabel.stringValue = L("main.name.required")
             return
         }
         guard DataManager.shared.isValidOTPAuthURL(url) else {
-            statusLabel.stringValue = L("auth.invalid_url")
+            detailStatusLabel.stringValue = L("auth.invalid_url")
             return
         }
 
@@ -563,12 +635,20 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     }
 
     @objc private func copyCodeClicked() {
-        guard let tag = selectedTag, let code = DataManager.shared.verificationCode(for: tag) else {
+        let code: String?
+        switch formMode {
+        case .viewing:
+            code = selectedTag.flatMap { DataManager.shared.verificationCode(for: $0) }
+        case .adding, .editing:
+            code = DataManager.shared.verificationCode(forOTPAuthURL: urlTextView.string)
+        }
+
+        guard let code = code else {
             return
         }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(code, forType: .string)
-        statusLabel.stringValue = L("main.copied")
+        detailStatusLabel.stringValue = L("main.copied")
     }
 
     @objc private func scanQRCodeClicked() {
@@ -585,12 +665,30 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
               let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyLow]),
               let result = detector.features(in: ciImage).last as? CIQRCodeFeature,
               let message = result.messageString else {
-            statusLabel.stringValue = L("main.scan_failed")
+            if emptyDetailLabel.isHidden {
+                detailStatusLabel.stringValue = L("main.scan_failed")
+            } else {
+                emptyDetailLabel.stringValue = L("main.scan_failed")
+            }
             return
         }
 
+        formMode = .adding
+        selectedTag = nil
+        tableView.deselectAll(nil)
+        showDetailContent(true)
         urlTextView.string = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        nameField.stringValue = ""
+        detailStatusLabel.stringValue = ""
+        setFormEnabled(true)
+        saveButton.isHidden = false
+        cancelButton.isHidden = false
+        editButton.isHidden = true
+        deleteButton.isEnabled = false
+        scanQRButton.isEnabled = true
         updateNameFromURLIfNeeded(force: true)
+        updateCode()
+        nameField.becomeFirstResponder()
     }
 
     private func updateNameFromURLIfNeeded(force: Bool = false) {
@@ -617,7 +715,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
             let count = DataManager.shared.importData(dist: url)
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "VerifyKeyAdded"), object: nil)
             reloadData(selecting: selectedTag)
-            statusLabel.stringValue = LF("import.success", count)
+            settingsStatusLabel.stringValue = LF("import.success", count)
         }
     }
 
@@ -633,13 +731,13 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
     @objc private func savePortClicked() {
         let port = httpPortField.integerValue
         guard port > 0 && port < 65535 else {
-            statusLabel.stringValue = L("http.port.invalid")
+            settingsStatusLabel.stringValue = L("http.port.invalid")
             return
         }
 
         DataManager.shared.saveHttpServerPort(port: "\(port)")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "HTTPServerPortChanged"), object: nil)
-        statusLabel.stringValue = L("http.port.updated")
+        settingsStatusLabel.stringValue = L("http.port.updated")
     }
 
     @objc private func toggleLaunchAtLogin() {
@@ -647,7 +745,7 @@ final class MainWindowController: NSWindowController, NSTableViewDataSource, NST
             try LoginItemManager.shared.setEnabled(launchAtLoginButton.state == .on)
         } catch {
             launchAtLoginButton.state = LoginItemManager.shared.isEnabled ? .on : .off
-            statusLabel.stringValue = LF("launch_at_login.failed", "\(error)")
+            settingsStatusLabel.stringValue = LF("launch_at_login.failed", "\(error)")
         }
     }
 

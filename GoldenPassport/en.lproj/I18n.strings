@@ -12,6 +12,10 @@
 "menu.delete.done" = "Done Deleting";
 "menu.launch_at_login" = "Launch at Login";
 "menu.http.auto_start" = "Start HTTP service on app launch";
+"menu.cut" = "Cut";
+"menu.copy" = "Copy";
+"menu.paste" = "Paste";
+"menu.select_all" = "Select All";
 
 "auth.add.success" = "Added successfully. Please check the status menu.";
 "auth.edit.success" = "Updated successfully. Please check the status menu.";

@@ -12,6 +12,10 @@
 "menu.delete.done" = "完成删除";
 "menu.launch_at_login" = "开机启动";
 "menu.http.auto_start" = "应用启动时开启 HTTP 服务";
+"menu.cut" = "剪切";
+"menu.copy" = "复制";
+"menu.paste" = "粘贴";
+"menu.select_all" = "全选";
 
 "auth.add.success" = "添加成功，请到状态栏菜单查看。";
 "auth.edit.success" = "修改成功，请到状态栏菜单查看。";

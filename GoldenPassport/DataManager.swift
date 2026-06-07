@@ -88,6 +88,10 @@ final class DataManager {
         return verificationCode(forURL: url)
     }
 
+    func verificationCode(forOTPAuthURL url: String) -> String? {
+        return verificationCode(forURL: normalizedURL(url))
+    }
+
     func isValidOTPAuthURL(_ url: String) -> Bool {
         guard let otpInfo = OTPAuthURLParser(normalizedURL(url)) else {
             return false
