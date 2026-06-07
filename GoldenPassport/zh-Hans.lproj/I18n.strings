@@ -10,6 +10,8 @@
 "menu.edit.done" = "完成编辑";
 "menu.delete" = "删除";
 "menu.delete.done" = "完成删除";
+"menu.launch_at_login" = "开机启动";
+"menu.http.auto_start" = "应用启动时开启 HTTP 服务";
 
 "auth.add.success" = "添加成功，请到状态栏菜单查看。";
 "auth.edit.success" = "修改成功，请到状态栏菜单查看。";
@@ -34,3 +36,5 @@
 "http.port.label" = "HTTP 服务端口：";
 "http.port.updated" = "端口号已修改。";
 "http.port.invalid" = "端口号必须是大于 0 小于 65535 的整数，请检查后重试！";
+
+"launch_at_login.failed" = "更新开机启动设置失败:\n%@";

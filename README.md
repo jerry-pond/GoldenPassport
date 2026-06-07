@@ -22,6 +22,7 @@ This repository is a fork of [stanzhai/GoldenPassport](https://github.com/stanzh
 - Manage authentication codes from the macOS menu bar
 - Edit existing authentication entries, including name and OTPAuth URL
 - Support English and Simplified Chinese UI
+- Launch automatically at login
 - Copy verification codes from the status menu
 - Fill verification codes with global hotkeys: `Shift+Cmd+[0-9]`
 - Export and import authentication codes
@@ -93,6 +94,7 @@ xcodebuild \
 - Added edit icon assets and menu state handling
 - Added English and Simplified Chinese app localization
 - Added Simplified Chinese README
+- Added launch-at-login support
 - Migrated dependency management from CocoaPods to Swift Package Manager
 - Added `Package.resolved` to lock SwiftPM dependency resolution
 - Updated build and release packaging for separate `arm64` and `x86_64` macOS apps
@@ -107,5 +109,4 @@ xcodebuild \
 
 ## Todo
 
-- Support auto startup with system
-- Improve i18n
+- Continue improving release automation

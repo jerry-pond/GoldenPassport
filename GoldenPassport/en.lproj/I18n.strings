@@ -10,6 +10,8 @@
 "menu.edit.done" = "Done Editing";
 "menu.delete" = "Delete";
 "menu.delete.done" = "Done Deleting";
+"menu.launch_at_login" = "Launch at Login";
+"menu.http.auto_start" = "Start HTTP service on app launch";
 
 "auth.add.success" = "Added successfully. Please check the status menu.";
 "auth.edit.success" = "Updated successfully. Please check the status menu.";
@@ -34,3 +36,5 @@
 "http.port.label" = "HTTP Server Port:";
 "http.port.updated" = "Port updated.";
 "http.port.invalid" = "Port must be an integer greater than 0 and less than 65535. Please check and try again.";
+
+"launch_at_login.failed" = "Failed to update launch-at-login setting:\n%@";

@@ -25,3 +25,63 @@ var DONE_REMOVE_STR: String { L("menu.delete.done") }
 var REMOVE_STR: String { L("menu.delete") }
 
 let DEFAULT_HTTP_PORT = 17304
+
+final class LoginItemManager {
+    static let shared = LoginItemManager()
+
+    private let label = "site.stanzhai.GoldenPassport"
+
+    private init() {}
+
+    var isEnabled: Bool {
+        return FileManager.default.fileExists(atPath: launchAgentURL.path)
+    }
+
+    func setEnabled(_ enabled: Bool) throws {
+        if enabled {
+            try installLaunchAgent()
+        } else {
+            try removeLaunchAgent()
+        }
+    }
+
+    private func installLaunchAgent() throws {
+        guard let executablePath = Bundle.main.executablePath else {
+            return
+        }
+
+        try FileManager.default.createDirectory(
+            at: launchAgentsDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        let plist: [String: Any] = [
+            "Label": label,
+            "ProgramArguments": [executablePath],
+            "RunAtLoad": true
+        ]
+        let data = try PropertyListSerialization.data(
+            fromPropertyList: plist,
+            format: .xml,
+            options: 0
+        )
+        try data.write(to: launchAgentURL, options: .atomic)
+    }
+
+    private func removeLaunchAgent() throws {
+        if FileManager.default.fileExists(atPath: launchAgentURL.path) {
+            try FileManager.default.removeItem(at: launchAgentURL)
+        }
+    }
+
+    private var launchAgentsDirectoryURL: URL {
+        return FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library")
+            .appendingPathComponent("LaunchAgents")
+    }
+
+    private var launchAgentURL: URL {
+        return launchAgentsDirectoryURL.appendingPathComponent("\(label).plist")
+    }
+}

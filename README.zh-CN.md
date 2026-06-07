@@ -22,6 +22,7 @@ GoldenPassport 是一个原生 macOS 验证码管理工具，用于管理 OTPAut
 - 通过 macOS 菜单栏管理验证码
 - 编辑已有认证信息，包括名称和 OTPAuth URL
 - 支持英文和简体中文界面
+- 支持开机启动
 - 从状态栏菜单复制验证码
 - 使用全局快捷键 `Shift+Cmd+[0-9]` 直接填入验证码
 - 导出和导入认证信息
@@ -93,6 +94,7 @@ xcodebuild \
 - 新增编辑图标资源和菜单状态处理
 - 新增英文和简体中文界面本地化
 - 新增简体中文 README
+- 新增开机启动支持
 - 从 CocoaPods 迁移到 Swift Package Manager
 - 增加 `Package.resolved`，锁定 SwiftPM 依赖解析
 - 更新发布构建流程，分别提供 `arm64` 和 `x86_64` macOS app
@@ -107,5 +109,4 @@ xcodebuild \
 
 ## Todo
 
-- 支持系统启动时自动启动应用
-- 继续完善多语言支持
+- 继续完善发布自动化

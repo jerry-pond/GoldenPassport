@@ -21,6 +21,7 @@ class StatusMenuController: NSObject {
     @IBOutlet weak var httpUrlMenuItem: NSMenuItem!
     @IBOutlet weak var httpServerSwitch: NSMenuItem!
     @IBOutlet weak var enableAutoStart: NSMenuItem!
+    var launchAtLoginMenuItem: NSMenuItem!
     
     var statusItem: NSStatusItem!
     var timerMenuItem: NSMenuItem!
@@ -92,6 +93,7 @@ class StatusMenuController: NSObject {
         timerMenuItem = NSMenuItem()
         statusMenu.insertItem(timerMenuItem, at: 0)
         enableAutoStart.state = NSControl.StateValue(rawValue: DataManager.shared.getHttpServerAutoStart() ? 1 : 0)
+        enableAutoStart.title = L("menu.http.auto_start")
 
         editMenuItem = NSMenuItem(title: L("menu.edit"), action: #selector(editClicked), keyEquivalent: "e")
         editMenuItem.target = self
@@ -99,6 +101,13 @@ class StatusMenuController: NSObject {
             statusMenu.insertItem(editMenuItem, at: deleteIndex + 1)
         } else {
             statusMenu.insertItem(editMenuItem, at: 3)
+        }
+
+        launchAtLoginMenuItem = NSMenuItem(title: L("menu.launch_at_login"), action: #selector(launchAtLoginClicked), keyEquivalent: "")
+        launchAtLoginMenuItem.target = self
+        launchAtLoginMenuItem.state = NSControl.StateValue(rawValue: LoginItemManager.shared.isEnabled ? 1 : 0)
+        if let httpSectionIndex = statusMenu.items.firstIndex(of: httpServerSwitch) {
+            statusMenu.insertItem(launchAtLoginMenuItem, at: httpSectionIndex)
         }
     }
 
@@ -373,6 +382,21 @@ class StatusMenuController: NSObject {
         } else {
             enableAutoStart.state = NSControl.StateValue(rawValue: 1)
             DataManager.shared.saveHttpServerAutoStart(auto: true)
+        }
+    }
+
+    @IBAction func launchAtLoginClicked(_ sender: NSMenuItem) {
+        let shouldEnable = sender.state.rawValue != 1
+
+        do {
+            try LoginItemManager.shared.setEnabled(shouldEnable)
+            sender.state = NSControl.StateValue(rawValue: shouldEnable ? 1 : 0)
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = LF("launch_at_login.failed", "\(error)")
+            alert.addButton(withTitle: L("common.ok"))
+            alert.alertStyle = NSAlert.Style.warning
+            alert.runModal()
         }
     }
     
